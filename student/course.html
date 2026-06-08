@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课程学习 - 航空CBT培训平台</title>
+    <link rel="stylesheet" href="../shared/styles.css">
+    <style>
+        .player-layout {
+            height: 100vh;
+        }
+        
+        .player-sidebar {
+            width: 320px;
+            background: var(--bg-white);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .player-sidebar-header {
+            padding: 20px;
+            background: var(--primary-dark);
+            color: white;
+        }
+        
+        .player-sidebar-header .back-link {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+        
+        .player-sidebar-header .back-link:hover {
+            color: white;
+        }
+        
+        .player-sidebar-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .player-sidebar-header .course-code {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        
+        .chapter-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .chapter-section {
+            padding: 12px 16px;
+            background: var(--bg-light);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .chapter-item {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .chapter-item:hover {
+            background: var(--bg-light);
+        }
+        
+        .chapter-item.active {
+            background: rgba(37, 99, 235, 0.08);
+            border-left: 3px solid var(--primary-blue);
+        }
+        
+        .chapter-item.completed .chapter-icon {
+            color: var(--success-green);
+        }
+        
+        .chapter-item .chapter-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+        
+        .chapter-item .chapter-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .chapter-item .chapter-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-dark);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .chapter-item .chapter-meta {
+            font-size: 12px;
+            color: var(--text-gray);
+            margin-top: 2px;
+        }
+        
+        .chapter-item .chapter-badge {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: var(--success-green);
+            color: white;
+        }
+        
+        .player-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #f1f5f9;
+        }
+        
+        .player-header {
+            height: 64px;
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+        }
+        
+        .player-nav {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .player-nav button {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-white);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        
+        .player-nav button:hover:not(:disabled) {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+        }
+        
+        .player-nav button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .player-content {
+            flex: 1;
+            padding: 24px;
+            overflow: hidden;
+        }
+        
+        .courseware-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .empty-content {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 12px;
+            color: var(--text-gray);
+        }
+        
+        .empty-content svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .empty-content h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+        
+        .learning-timer {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--bg-light);
+            border-radius: 20px;
+            font-size: 13px;
+        }
+        
+        .learning-timer .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success-green);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .progress-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-gray);
+        }
+        
+        .progress-indicator .bar {
+            width: 100px;
+            height: 6px;
+            background: var(--border-color);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-indicator .bar-fill {
+            height: 100%;
+            background: var(--primary-blue);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="player-layout">
+        <!-- 左侧章节导航 -->
+        <aside class="player-sidebar">
+            <div class="player-sidebar-header">
+                <a href="index.html" class="back-link">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15 18 9 12 15 6"/>
+                    </svg>
+                    返回课程列表
+                </a>
+                <h3 id="courseName">加载中...</h3>
+                <div class="course-code" id="courseCode"></div>
+            </div>
+            
+            <div class="progress-indicator" style="padding: 12px 16px; border-bottom: 1px solid var(--border-color);">
+                <div class="bar">
+                    <div class="bar-fill" id="courseProgressBar" style="width: 0%"></div>
+                </div>
+                <span id="courseProgressText">0%</span>
+            </div>
+            
+            <div class="chapter-list" id="chapterList">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="player-main">
+            <header class="player-header">
+                <div class="player-nav">
+                    <button id="prevBtn" disabled>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="15 18 9 12 15 6"/>
+                        </svg>
+                        上一章
+                    </button>
+                    <button id="nextBtn">
+                        下一章
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="player-nav">
+                    <div class="learning-timer" id="learningTimer">
+                        <div class="dot"></div>
+                        <span id="timerText">00:00</span>
+                    </div>
+                    <button class="btn btn-primary" id="completeBtn">
+                        完成章节
+                    </button>
+                </div>
+            </header>
+
+            <div class="player-content">
+                <iframe id="coursewareFrame" class="courseware-frame" src="about:blank"></iframe>
+            </div>
+        </main>
+    </div>
+
+    <script src="../shared/app.js"></script>
+    <script>
+        // 获取URL参数
+        const urlParams = new URLSearchParams(window.location.search);
+        const courseId = urlParams.get('id');
+        
+        // 检查登录状态
+        const user = LMS.checkAuth(['student', 'admin', 'super_admin']);
+        if (!user) {
+            window.location.href = '../index.html';
+        }
+        
+        let currentChapterIndex = 0;
+        let currentRecord = null;
+        let timerInterval = null;
+        let elapsedSeconds = 0;
+        
+        // 加载课程数据
+        function loadCourse() {
+            const course = LMS.getCourse(courseId);
+            if (!course) {
+                alert('课程不存在');
+                location.href = 'index.html';
+                return;
+            }
+            
+            document.getElementById('courseName').textContent = course.name;
+            document.getElementById('courseCode').textContent = `${course.code} · ${course.aircraft}`;
+            document.title = `${course.name} - 航空CBT培训平台`;
+            
+            renderChapterList(course);
+            updateProgress(course);
+        }
+        
+        // 渲染章节列表
+        function renderChapterList(course) {
+            const container = document.getElementById('chapterList');
+            const records = LMS.getStudentRecords(user.userId);
+            const completedChapters = new Set(records.filter(r => r.status === 'completed').map(r => r.chapterId));
+            
+            let html = '<div class="chapter-section">学习章节</div>';
+            
+            if (course.chapters && course.chapters.length > 0) {
+                course.chapters.forEach((chapter, index) => {
+                    const isCompleted = completedChapters.has(chapter.id);
+                    const isActive = index === currentChapterIndex;
+                    
+                    html += `
+                        <div class="chapter-item ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}" 
+                             data-index="${index}" data-chapter-id="${chapter.id}">
+                            <svg class="chapter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                ${isCompleted 
+                                    ? '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>'
+                                    : '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'
+                                }
+                            </svg>
+                            <div class="chapter-info">
+                                <div class="chapter-name">${chapter.code}.00 · ${chapter.name}</div>
+                                <div class="chapter-meta">${chapter.type === 'test' ? '测试' : '学习'}</div>
+                            </div>
+                            ${isCompleted ? '<span class="chapter-badge">已完成</span>' : ''}
+                        </div>
+                    `;
+                });
+            } else {
+                html += `
+                    <div class="empty-state" style="padding: 40px;">
+                        <p>暂无章节内容</p>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+            
+            // 添加点击事件
+            container.querySelectorAll('.chapter-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const index = parseInt(item.dataset.index);
+                    const chapterId = item.dataset.chapterId;
+                    selectChapter(index, chapterId);
+                });
+            });
+        }
+        
+        // 选择章节
+        function selectChapter(index, chapterId) {
+            currentChapterIndex = index;
+            
+            // 更新UI
+            document.querySelectorAll('.chapter-item').forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
+            
+            // 停止当前学习计时
+            if (currentRecord) {
+                LMS.stopLearning(currentRecord.id);
+            }
+            
+            // 开始新的学习
+            currentRecord = LMS.startLearning(user.userId, courseId, chapterId);
+            elapsedSeconds = 0;
+            startTimer();
+            
+            // 更新导航按钮
+            updateNavButtons();
+            
+            // 加载课件（这里模拟，实际需要根据courseware数据加载）
+            loadCourseware(chapterId);
+        }
+        
+        // 加载课件
+        function loadCourseware(chapterId) {
+            const frame = document.getElementById('coursewareFrame');
+            const course = LMS.getCourse(courseId);
+            const chapter = course?.chapters?.find(c => c.id === chapterId);
+            
+            // 检查是否有对应的课件
+            const courseware = LMS.getCoursewareByCourse(courseId);
+            const cw = courseware.find(c => c.chapterId === chapterId);
+            
+            if (cw && cw.filePath) {
+                frame.src = cw.filePath;
+            } else {
+                // 显示占位内容
+                frame.src = 'about:blank';
+                frame.onload = () => {
+                    frame.contentDocument.body.innerHTML = `
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #64748b;">
+                            <svg viewBox="0 0 24 24" width="80" height="80" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 20px; opacity: 0.5;">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <polyline points="10 9 9 9 8 9"/>
+                            </svg>
+                            <h2 style="font-size: 20px; color: #1e293b; margin-bottom: 8px;">${chapter?.name || '章节'} 课件</h2>
+                            <p style="font-size: 14px;">课件文件正在准备中，请联系管理员上传</p>
+                        </div>
+                    `;
+                };
+            }
+        }
+        
+        // 更新导航按钮
+        function updateNavButtons() {
+            const course = LMS.getCourse(courseId);
+            const totalChapters = course?.chapters?.length || 0;
+            
+            document.getElementById('prevBtn').disabled = currentChapterIndex <= 0;
+            document.getElementById('nextBtn').disabled = currentChapterIndex >= totalChapters - 1;
+        }
+        
+        // 更新进度
+        function updateProgress(course) {
+            const records = LMS.getStudentRecords(user.userId);
+            const completedChapters = new Set(records.filter(r => r.status === 'completed').map(r => r.chapterId));
+            const totalChapters = course?.chapters?.length || 1;
+            const progress = Math.round((completedChapters.size / totalChapters) * 100);
+            
+            document.getElementById('courseProgressBar').style.width = progress + '%';
+            document.getElementById('courseProgressText').textContent = progress + '%';
+        }
+        
+        // 计时器
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            
+            timerInterval = setInterval(() => {
+                elapsedSeconds++;
+                const minutes = Math.floor(elapsedSeconds / 60);
+                const seconds = elapsedSeconds % 60;
+                document.getElementById('timerText').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+        
+        // 完成章节
+        document.getElementById('completeBtn').addEventListener('click', () => {
+            if (currentRecord) {
+                LMS.stopLearning(currentRecord.id);
+                LMS.showToast('章节已完成！', 'success');
+                
+                // 更新UI
+                const activeItem = document.querySelector('.chapter-item.active');
+                if (activeItem) {
+                    activeItem.classList.add('completed');
+                    activeItem.querySelector('.chapter-icon').innerHTML = 
+                        '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>';
+                    activeItem.querySelector('.chapter-meta').textContent = '已完成';
+                    
+                    const badge = document.createElement('span');
+                    badge.className = 'chapter-badge';
+                    badge.textContent = '已完成';
+                    activeItem.appendChild(badge);
+                }
+                
+                // 刷新进度
+                const course = LMS.getCourse(courseId);
+                updateProgress(course);
+                
+                // 自动进入下一章
+                const totalChapters = course?.chapters?.length || 0;
+                if (currentChapterIndex < totalChapters - 1) {
+                    const nextChapter = course.chapters[currentChapterIndex + 1];
+                    setTimeout(() => {
+                        selectChapter(currentChapterIndex + 1, nextChapter.id);
+                    }, 1000);
+                }
+            }
+        });
+        
+        // 导航按钮
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            const course = LMS.getCourse(courseId);
+            if (currentChapterIndex > 0) {
+                const prevChapter = course.chapters[currentChapterIndex - 1];
+                selectChapter(currentChapterIndex - 1, prevChapter.id);
+            }
+        });
+        
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            const course = LMS.getCourse(courseId);
+            if (currentChapterIndex < course.chapters.length - 1) {
+                const nextChapter = course.chapters[currentChapterIndex + 1];
+                selectChapter(currentChapterIndex + 1, nextChapter.id);
+            }
+        });
+        
+        // 页面卸载时停止计时
+        window.addEventListener('beforeunload', () => {
+            if (currentRecord) {
+                LMS.stopLearning(currentRecord.id);
+            }
+        });
+        
+        // 初始化
+        loadCourse();
+        
+        // 默认选中第一个章节
+        const course = LMS.getCourse(courseId);
+        if (course && course.chapters && course.chapters.length > 0) {
+            selectChapter(0, course.chapters[0].id);
+        }
+    </script>
+</body>
+</html>

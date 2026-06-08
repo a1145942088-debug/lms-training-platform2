@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学习记录 - 航空CBT培训平台</title>
+    <link rel="stylesheet" href="../shared/styles.css">
+    <style>
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-item {
+            background: var(--bg-white);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+        
+        .stat-item .value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+        
+        .stat-item .label {
+            font-size: 13px;
+            color: var(--text-gray);
+            margin-top: 4px;
+        }
+        
+        .record-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .record-item:last-child {
+            border-bottom: none;
+        }
+        
+        .record-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary-blue);
+        }
+        
+        .record-info {
+            flex: 1;
+        }
+        
+        .record-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .record-meta {
+            font-size: 13px;
+            color: var(--text-gray);
+        }
+        
+        .record-duration {
+            text-align: right;
+        }
+        
+        .record-duration .time {
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+        
+        .record-duration .status {
+            font-size: 12px;
+            margin-top: 2px;
+        }
+        
+        .status-completed {
+            color: var(--success-green);
+        }
+        
+        .status-in-progress {
+            color: var(--accent-yellow);
+        }
+    </style>
+</head>
+<body>
+    <div class="main-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>航空CBT培训</h2>
+                <p>Learning Management System</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                    首页
+                </a>
+                <a href="courses.html" class="nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                    </svg>
+                    我的课程
+                </a>
+                <a href="progress.html" class="nav-item active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="20" x2="18" y2="10"/>
+                        <line x1="12" y1="20" x2="12" y2="4"/>
+                        <line x1="6" y1="20" x2="6" y2="14"/>
+                    </svg>
+                    学习记录
+                </a>
+                <a href="profile.html" class="nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    个人中心
+                </a>
+                <div class="nav-divider"></div>
+                <a href="#" class="nav-item" onclick="LMS.logout(); return false;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    退出登录
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <h1>学习记录</h1>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <div class="user-avatar" id="userAvatar">学</div>
+                        <div>
+                            <div class="user-name" id="userName">加载中...</div>
+                            <div class="user-role">学员</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <div class="value" id="totalTime">0h</div>
+                        <div class="label">总学习时长</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="value" id="completedCount">0</div>
+                        <div class="label">已完成章节</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="value" id="inProgressCount">0</div>
+                        <div class="label">进行中</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="value" id="totalRecords">0</div>
+                        <div class="label">总记录数</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>学习历史</h3>
+                    </div>
+                    <div id="recordsList">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../shared/app.js"></script>
+    <script>
+        const user = LMS.checkAuth(['student', 'admin', 'super_admin']);
+        if (!user) {
+            window.location.href = '../index.html';
+        }
+
+        document.getElementById('userName').textContent = user.name;
+        document.getElementById('userAvatar').textContent = user.name.charAt(0);
+
+        loadRecords();
+
+        function loadRecords() {
+            const studentId = user.userId;
+            const records = LMS.getStudentRecords(studentId);
+            const courses = LMS.getCourses();
+
+            const totalSeconds = records.reduce((sum, r) => sum + (r.duration || 0), 0);
+            const completedCount = records.filter(r => r.status === 'completed').length;
+            const inProgressCount = records.filter(r => r.status === 'in_progress').length;
+
+            document.getElementById('totalTime').textContent = Math.round(totalSeconds / 3600) + 'h';
+            document.getElementById('completedCount').textContent = completedCount;
+            document.getElementById('inProgressCount').textContent = inProgressCount;
+            document.getElementById('totalRecords').textContent = records.length;
+
+            const container = document.getElementById('recordsList');
+
+            if (records.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        <h4>暂无学习记录</h4>
+                        <p>开始学习后，这里会显示您的学习历史</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // 按时间排序
+            records.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+
+            let html = '';
+            records.forEach(record => {
+                const course = courses.find(c => c.id === record.courseId);
+                const chapter = course?.chapters?.find(ch => ch.id === record.chapterId);
+
+                html += `
+                    <div class="record-item">
+                        <div class="record-icon">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                                ${record.status === 'completed' 
+                                    ? '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>'
+                                    : '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'
+                                }
+                            </svg>
+                        </div>
+                        <div class="record-info">
+                            <div class="record-title">${course?.name || '未知课程'} - ${chapter?.name || '未知章节'}</div>
+                            <div class="record-meta">${LMS.formatDateTime(record.startTime)}</div>
+                        </div>
+                        <div class="record-duration">
+                            <div class="time">${LMS.formatDuration(record.duration)}</div>
+                            <div class="status ${record.status === 'completed' ? 'status-completed' : 'status-in-progress'}">
+                                ${record.status === 'completed' ? '已完成' : '进行中'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

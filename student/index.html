@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的课程 - 航空CBT培训平台</title>
+    <link rel="stylesheet" href="../shared/styles.css">
+    <style>
+        .welcome-banner {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #2d4a6f 100%);
+            color: white;
+            padding: 32px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .welcome-banner h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .welcome-banner p {
+            opacity: 0.8;
+            font-size: 14px;
+        }
+        
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-mini {
+            background: var(--bg-white);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+        
+        .stat-mini .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+        
+        .stat-mini .label {
+            font-size: 13px;
+            color: var(--text-gray);
+            margin-top: 4px;
+        }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        
+        .section-title h3 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .course-card {
+            position: relative;
+        }
+        
+        .course-card .badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+        }
+        
+        .course-progress-bar {
+            margin-bottom: 12px;
+        }
+        
+        .course-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 13px;
+            color: var(--text-gray);
+        }
+        
+        .course-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .course-actions {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn-start {
+            flex: 1;
+        }
+        
+        @media (max-width: 1024px) {
+            .stats-overview {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .stats-overview {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-layout">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>航空CBT培训</h2>
+                <p>Learning Management System</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                    首页
+                </a>
+                <a href="courses.html" class="nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                    </svg>
+                    我的课程
+                </a>
+                <a href="progress.html" class="nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="20" x2="18" y2="10"/>
+                        <line x1="12" y1="20" x2="12" y2="4"/>
+                        <line x1="6" y1="20" x2="6" y2="14"/>
+                    </svg>
+                    学习记录
+                </a>
+                <a href="profile.html" class="nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    个人中心
+                </a>
+                <div class="nav-divider"></div>
+                <a href="#" class="nav-item" onclick="LMS.logout(); return false;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    退出登录
+                </a>
+            </nav>
+        </aside>
+
+        <!-- 主内容 -->
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <h1>欢迎回来</h1>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <div class="user-avatar" id="userAvatar">学</div>
+                        <div>
+                            <div class="user-name" id="userName">加载中...</div>
+                            <div class="user-role">学员</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <!-- 欢迎横幅 -->
+                <div class="welcome-banner">
+                    <h2 id="welcomeText">你好，张伟</h2>
+                    <p>继续你的学习之旅，今天要完成哪些课程呢？</p>
+                </div>
+
+                <!-- 学习统计 -->
+                <div class="stats-overview">
+                    <div class="stat-mini">
+                        <div class="value" id="totalCourses">0</div>
+                        <div class="label">我的课程</div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="value" id="completedCourses">0</div>
+                        <div class="label">已完成</div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="value" id="totalHours">0h</div>
+                        <div class="label">总学习时长</div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="value" id="completionRate">0%</div>
+                        <div class="label">完成率</div>
+                    </div>
+                </div>
+
+                <!-- 进行中的课程 -->
+                <div class="section-title">
+                    <h3>继续学习</h3>
+                    <a href="courses.html" class="btn btn-secondary">查看全部</a>
+                </div>
+                <div class="course-grid" id="inProgressCourses">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+
+                <!-- 所有课程 -->
+                <div class="section-title" style="margin-top: 32px;">
+                    <h3>全部课程</h3>
+                </div>
+                <div class="course-grid" id="allCourses">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../shared/app.js"></script>
+    <script>
+        // 检查登录状态
+        const user = LMS.checkAuth(['student', 'admin', 'super_admin']);
+        if (!user) {
+            // 如果未登录，重定向到登录页
+        } else {
+            // 渲染用户信息
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('welcomeText').textContent = `你好，${user.name}`;
+            document.getElementById('userAvatar').textContent = user.name.charAt(0);
+            
+            // 加载统计数据
+            loadStats();
+            
+            // 加载课程列表
+            loadCourses();
+        }
+        
+        function loadStats() {
+            const studentId = user.userId;
+            
+            // 获取分配的课程
+            const assignments = LMS.getStudentAssignments(studentId);
+            const totalCourses = assignments.length;
+            
+            // 获取学习记录
+            const records = LMS.getStudentRecords(studentId);
+            const completedCourses = new Set(records.filter(r => r.status === 'completed').map(r => r.courseId)).size;
+            
+            // 计算总学习时长
+            const totalSeconds = LMS.getStudentTotalTime(studentId);
+            const totalHours = Math.round(totalSeconds / 3600);
+            
+            // 计算完成率
+            const completionRate = totalCourses > 0 ? Math.round((completedCourses / totalCourses) * 100) : 0;
+            
+            document.getElementById('totalCourses').textContent = totalCourses;
+            document.getElementById('completedCourses').textContent = completedCourses;
+            document.getElementById('totalHours').textContent = totalHours + 'h';
+            document.getElementById('completionRate').textContent = completionRate + '%';
+        }
+        
+        function loadCourses() {
+            const studentId = user.userId;
+            const assignments = LMS.getStudentAssignments(studentId);
+            const courses = LMS.getCourses();
+            const records = LMS.getStudentRecords(studentId);
+            
+            const inProgressContainer = document.getElementById('inProgressCourses');
+            const allContainer = document.getElementById('allCourses');
+            
+            if (assignments.length === 0) {
+                inProgressContainer.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                        </svg>
+                        <h4>暂无分配的课程</h4>
+                        <p>请联系管理员为您分配培训课程</p>
+                    </div>
+                `;
+                allContainer.innerHTML = '';
+                return;
+            }
+            
+            let inProgressHTML = '';
+            let allHTML = '';
+            
+            assignments.forEach(asg => {
+                const course = courses.find(c => c.id === asg.courseId);
+                if (!course) return;
+                
+                // 获取该课程的完成进度
+                const courseRecords = records.filter(r => r.courseId === course.id && r.status === 'completed');
+                const completedChapters = new Set(courseRecords.map(r => r.chapterId)).size;
+                const totalChapters = course.chapters?.length || 1;
+                const progress = Math.round((completedChapters / totalChapters) * 100);
+                
+                // 判断是否在进行中
+                const hasInProgress = records.some(r => r.courseId === course.id && r.status === 'in_progress');
+                const isCompleted = progress >= 100;
+                
+                const cardHTML = `
+                    <div class="course-card" onclick="location.href='course.html?id=${course.id}'">
+                        ${isCompleted ? '<span class="badge badge-success">已完成</span>' : ''}
+                        <div class="course-card-header">
+                            <h4>${course.name}</h4>
+                            <div class="course-code">${course.code} · ${course.aircraft}</div>
+                        </div>
+                        <div class="course-card-body">
+                            <div class="course-progress-bar">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${progress}%"></div>
+                                </div>
+                                <div class="progress-text">
+                                    <span>${course.chapters?.length || 0} 个章节</span>
+                                    <span>${progress}%</span>
+                                </div>
+                            </div>
+                            <div class="course-meta">
+                                <span>
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <polyline points="12 6 12 12 16 14"/>
+                                    </svg>
+                                    ${course.chapters?.length * 30} 分钟
+                                </span>
+                                <span>
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                        <polyline points="22 4 12 14.01 9 11.01"/>
+                                    </svg>
+                                    ${completedChapters}/${totalChapters} 已完成
+                                </span>
+                            </div>
+                            <div class="course-actions">
+                                <button class="btn ${isCompleted ? 'btn-secondary' : 'btn-primary'} btn-start">
+                                    ${isCompleted ? '重新学习' : '继续学习'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                if (hasInProgress || (!isCompleted && completedChapters > 0)) {
+                    inProgressHTML += cardHTML;
+                }
+                allHTML += cardHTML;
+            });
+            
+            inProgressContainer.innerHTML = inProgressHTML || `
+                <div class="empty-state">
+                    <p>暂无正在进行的课程</p>
+                </div>
+            `;
+            allContainer.innerHTML = allHTML;
+        }
+    </script>
+</body>
+</html>

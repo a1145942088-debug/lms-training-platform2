@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学员管理 - 航空CBT培训平台</title>
+    <link rel="stylesheet" href="../shared/styles.css">
+    <style>
+        .toolbar {
+            margin-bottom: 20px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-buttons button {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        
+        .import-export {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .modal input, .modal select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .file-upload-input {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>航空CBT培训</h2>
+                <p>管理员后台</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                    仪表盘
+                </a>
+                <a href="students.html" class="nav-item active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    学员管理
+                </a>
+                <a href="courses.html" class="nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                    </svg>
+                    课程管理
+                </a>
+                <a href="courseware.html" class="nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="8" y1="13" x2="16" y2="13"/>
+                        <line x1="8" y1="17" x2="16" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                    课件管理
+                </a>
+                <a href="assignments.html" class="nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    课程分配
+                </a>
+                <a href="records.html" class="nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                    学习记录
+                </a>
+                <a href="reports.html" class="nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 3v18h18"/>
+                        <path d="M18 17V9"/>
+                        <path d="M13 17V5"/>
+                        <path d="M8 17v-3"/>
+                    </svg>
+                    统计报表
+                </a>
+                <div class="nav-divider"></div>
+                <a href="#" class="nav-item" onclick="LMS.logout(); return false;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    退出登录
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <h1>学员管理</h1>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <div class="user-avatar" id="userAvatar">管</div>
+                        <div>
+                            <div class="user-name" id="userName">加载中...</div>
+                            <div class="user-role">管理员</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <div class="toolbar">
+                    <div class="toolbar-left">
+                        <div class="search-box">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"/>
+                                <path d="m21 21-4.35-4.35"/>
+                            </svg>
+                            <input type="text" id="searchInput" placeholder="搜索学员姓名/账号/邮箱...">
+                        </div>
+                    </div>
+                    <div class="toolbar-right">
+                        <div class="import-export">
+                            <label class="btn btn-secondary" style="cursor: pointer;">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="7 10 12 15 17 10"/>
+                                    <line x1="12" y1="15" x2="12" y2="3"/>
+                                </svg>
+                                导入学员
+                                <input type="file" id="importFile" class="file-upload-input" accept=".csv">
+                            </label>
+                            <button class="btn btn-secondary" onclick="exportStudents()">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="7 10 12 15 17 10"/>
+                                    <line x1="12" y1="15" x2="12" y2="3"/>
+                                </svg>
+                                导出学员
+                            </button>
+                        </div>
+                        <button class="btn btn-primary" onclick="openAddModal()">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                            添加学员
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>姓名</th>
+                                    <th>账号</th>
+                                    <th>邮箱</th>
+                                    <th>班级</th>
+                                    <th>课程数</th>
+                                    <th>学习时长</th>
+                                    <th>创建时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentsTable">
+                                <tr>
+                                    <td colspan="8" style="text-align: center;">
+                                        <div class="loading" style="padding: 40px;">
+                                            <div class="spinner"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 添加/编辑学员模态框 -->
+    <div class="modal-overlay" id="studentModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">添加学员</h3>
+                <button class="modal-close" onclick="closeModal()">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <form id="studentForm">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>姓名 <span style="color: red;">*</span></label>
+                            <input type="text" id="formName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>账号 <span style="color: red;">*</span></label>
+                            <input type="text" id="formUsername" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>密码 <span style="color: red;">*</span></label>
+                            <input type="password" id="formPassword" value="123456" required>
+                        </div>
+                        <div class="form-group">
+                            <label>班级</label>
+                            <input type="text" id="formClass">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>邮箱</label>
+                        <input type="email" id="formEmail">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../shared/app.js"></script>
+    <script>
+        const user = LMS.checkAuth(['admin', 'super_admin']);
+        if (!user) {
+            window.location.href = 'login.html';
+        }
+
+        document.getElementById('userName').textContent = user.name;
+        document.getElementById('userAvatar').textContent = user.name.charAt(0);
+
+        let editingStudentId = null;
+
+        loadStudents();
+        document.getElementById('searchInput').addEventListener('input', loadStudents);
+
+        document.getElementById('importFile').addEventListener('change', handleImport);
+
+        function loadStudents() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const students = LMS.getStudents();
+            const table = document.getElementById('studentsTable');
+            const assignments = LMS.getAssignments();
+            const records = LMS.getLearningRecords();
+
+            const filtered = students.filter(s => 
+                s.name.toLowerCase().includes(search) ||
+                s.username.toLowerCase().includes(search) ||
+                (s.email && s.email.toLowerCase().includes(search)) ||
+                (s.class && s.class.toLowerCase().includes(search))
+            );
+
+            if (filtered.length === 0) {
+                table.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center;">
+                            <div class="empty-state">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="9" cy="7" r="4"/>
+                                </svg>
+                                <h4>暂无学员数据</h4>
+                                <p>点击右上角"添加学员"开始创建</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(student => {
+                const studentAssignments = assignments.filter(a => a.studentId === student.id);
+                const studentRecords = records.filter(r => r.studentId === student.id);
+                const totalTime = studentRecords.reduce((sum, r) => sum + (r.duration || 0), 0);
+
+                html += `
+                    <tr>
+                        <td>${student.name}</td>
+                        <td>${student.username}</td>
+                        <td>${student.email || '-'}</td>
+                        <td>${student.class || '-'}</td>
+                        <td>${studentAssignments.length}</td>
+                        <td>${LMS.formatDuration(totalTime)}</td>
+                        <td>${LMS.formatDate(student.createdAt || '-')}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-secondary" onclick="editStudent('${student.id}')">编辑</button>
+                                <button class="btn btn-danger" onclick="deleteStudent('${student.id}', '${student.name}')">删除</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            table.innerHTML = html;
+        }
+
+        function openAddModal() {
+            editingStudentId = null;
+            document.getElementById('modalTitle').textContent = '添加学员';
+            document.getElementById('formName').value = '';
+            document.getElementById('formUsername').value = '';
+            document.getElementById('formPassword').value = '123456';
+            document.getElementById('formEmail').value = '';
+            document.getElementById('formClass').value = '';
+            document.getElementById('studentModal').classList.add('active');
+        }
+
+        function editStudent(id) {
+            const students = LMS.getStudents();
+            const student = students.find(s => s.id === id);
+            if (!student) return;
+
+            editingStudentId = id;
+            document.getElementById('modalTitle').textContent = '编辑学员';
+            document.getElementById('formName').value = student.name;
+            document.getElementById('formUsername').value = student.username;
+            document.getElementById('formPassword').value = student.password;
+            document.getElementById('formEmail').value = student.email || '';
+            document.getElementById('formClass').value = student.class || '';
+            document.getElementById('studentModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('studentModal').classList.remove('active');
+        }
+
+        document.getElementById('studentForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const data = {
+                name: document.getElementById('formName').value.trim(),
+                username: document.getElementById('formUsername').value.trim(),
+                password: document.getElementById('formPassword').value,
+                email: document.getElementById('formEmail').value.trim(),
+                class: document.getElementById('formClass').value.trim()
+            };
+
+            if (editingStudentId) {
+                LMS.updateStudent(editingStudentId, data);
+                LMS.showToast('学员信息已更新', 'success');
+            } else {
+                LMS.addStudent(data);
+                LMS.showToast('学员已添加', 'success');
+            }
+
+            closeModal();
+            loadStudents();
+        });
+
+        function deleteStudent(id, name) {
+            if (confirm(`确定要删除学员 "${name}" 吗？此操作将同时删除该学员的所有学习记录和课程分配。`)) {
+                LMS.deleteStudent(id);
+                LMS.showToast('学员已删除', 'success');
+                loadStudents();
+            }
+        }
+
+        function exportStudents() {
+            const students = LMS.getStudents();
+            let csv = '姓名,账号,密码,邮箱,班级\n';
+            students.forEach(s => {
+                csv += `${s.name},${s.username},${s.password},${s.email || ''},${s.class || ''}\n`;
+            });
+
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `学员列表_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function handleImport(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const result = LMS.importStudents(e.target.result);
+                    LMS.showToast(`成功导入 ${result.count} 位学员`, 'success');
+                    loadStudents();
+                } catch (err) {
+                    LMS.showToast('导入失败，请检查CSV格式', 'error');
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        }
+
+        // 点击模态框外部关闭
+        document.getElementById('studentModal').addEventListener('click', (e) => {
+            if (e.target.id === 'studentModal') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

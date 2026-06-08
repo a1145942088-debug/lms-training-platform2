@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课件管理 - 航空CBT培训平台</title>
+    <link rel="stylesheet" href="../shared/styles.css">
+    <style>
+        .upload-area {
+            margin-bottom: 24px;
+        }
+        
+        .file-upload-area {
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .file-icon {
+            width: 64px;
+            height: 64px;
+            color: var(--primary-blue);
+            margin-bottom: 16px;
+        }
+        
+        .upload-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 24px;
+        }
+        
+        .upload-option {
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        
+        .upload-option:hover {
+            border-color: var(--primary-blue);
+            background: rgba(37, 99, 235, 0.05);
+        }
+        
+        .upload-option svg {
+            width: 40px;
+            height: 40px;
+            color: var(--primary-blue);
+            margin-bottom: 12px;
+        }
+        
+        .upload-option h4 {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        
+        .upload-option p {
+            font-size: 12px;
+            color: var(--text-gray);
+        }
+        
+        .courseware-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .courseware-item:last-child {
+            border-bottom: none;
+        }
+        
+        .courseware-info {
+            flex: 1;
+        }
+        
+        .courseware-name {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .courseware-meta {
+            font-size: 12px;
+            color: var(--text-gray);
+            display: flex;
+            gap: 24px;
+        }
+        
+        .courseware-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .modal input, .modal select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>航空CBT培训</h2>
+                <p>管理员后台</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                    仪表盘
+                </a>
+                <a href="students.html" class="nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    学员管理
+                </a>
+                <a href="courses.html" class="nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                    </svg>
+                    课程管理
+                </a>
+                <a href="courseware.html" class="nav-item active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="8" y1="13" x2="16" y2="13"/>
+                        <line x1="8" y1="17" x2="16" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                    课件管理
+                </a>
+                <a href="assignments.html" class="nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    课程分配
+                </a>
+                <a href="records.html" class="nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                    学习记录
+                </a>
+                <a href="reports.html" class="nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 3v18h18"/>
+                        <path d="M18 17V9"/>
+                        <path d="M13 17V5"/>
+                        <path d="M8 17v-3"/>
+                    </svg>
+                    统计报表
+                </a>
+                <div class="nav-divider"></div>
+                <a href="#" class="nav-item" onclick="LMS.logout(); return false;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    退出登录
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <h1>课件管理</h1>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <div class="user-avatar" id="userAvatar">管</div>
+                        <div>
+                            <div class="user-name" id="userName">加载中...</div>
+                            <div class="user-role">管理员</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <div class="card upload-area">
+                    <div class="card-header">
+                        <h3>上传课件</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="file-upload-area" id="uploadArea">
+                            <svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                            </svg>
+                            <div class="file-upload-text">拖拽ZIP课件包到此处，或者点击选择文件</div>
+                            <div class="file-upload-hint">
+                                支持以index.html为入口的HTML/JS/CSS格式课件包，单个文件不超过500MB
+                            </div>
+                            <input type="file" id="fileInput" accept=".zip" style="display: none;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="toolbar">
+                    <div class="toolbar-left">
+                        <div class="search-box">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"/>
+                                <path d="m21 21-4.35-4.35"/>
+                            </svg>
+                            <input type="text" id="searchInput" placeholder="搜索课件名称/课程...">
+                        </div>
+                        <select id="courseFilter">
+                            <option value="">全部课程</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div id="coursewareList">
+                        <div class="loading" style="padding: 40px;">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 课件信息填写模态框 -->
+    <div class="modal-overlay" id="infoModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>课件信息</h3>
+                <button class="modal-close" onclick="closeInfoModal()">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <form id="infoForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>课件名称 <span style="color: red;">*</span></label>
+                        <input type="text" id="formName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>所属课程 <span style="color: red;">*</span></label>
+                        <select id="formCourse" required>
+                            <option value="">请选择课程</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>所属章节 <span style="color: red;">*</span></label>
+                        <select id="formChapter" required>
+                            <option value="">请先选择课程</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>建议学习时长（分钟）</label>
+                            <input type="number" id="formDuration" value="30" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label>包含测试</label>
+                            <select id="formHasTest">
+                                <option value="false">否</option>
+                                <option value="true">是</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" id="fileInfo">
+                        <label>文件信息</label>
+                        <div style="font-size: 13px; color: var(--text-gray);">
+                            <span id="fileName">-</span> · <span id="fileSize">-</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeInfoModal()">取消</button>
+                    <button type="submit" class="btn btn-primary">上传</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../shared/app.js"></script>
+    <script>
+        const user = LMS.checkAuth(['admin', 'super_admin']);
+        if (!user) {
+            window.location.href = 'login.html';
+        }
+
+        document.getElementById('userName').textContent = user.name;
+        document.getElementById('userAvatar').textContent = user.name.charAt(0);
+
+        let currentFile = null;
+
+        loadCourseFilter();
+        loadCourseware();
+        document.getElementById('searchInput').addEventListener('input', loadCourseware);
+        document.getElementById('courseFilter').addEventListener('change', loadCourseware);
+
+        // 上传区域点击事件
+        document.getElementById('uploadArea').addEventListener('click', () => {
+            document.getElementById('fileInput').click();
+        });
+
+        // 文件选择
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+            e.target.value = '';
+        });
+
+        // 拖拽上传
+        document.getElementById('uploadArea').addEventListener('files-dropped', (e) => {
+            const file = e.detail[0];
+            handleFile(file);
+        });
+
+        function handleFile(file) {
+            if (!file.name.endsWith('.zip')) {
+                LMS.showToast('请上传ZIP格式的文件', 'error');
+                return;
+            }
+
+            currentFile = file;
+            openInfoModal(file);
+        }
+
+        function loadCourseFilter() {
+            const courses = LMS.getCourses();
+            const filterSelect = document.getElementById('courseFilter');
+            const formSelect = document.getElementById('formCourse');
+
+            let options = '<option value="">全部课程</option>';
+            courses.forEach(course => {
+                options += `<option value="${course.id}">${course.name} (${course.code})</option>`;
+            });
+
+            filterSelect.innerHTML = options;
+            formSelect.innerHTML = `<option value="">请选择课程</option>${options.substring(options.indexOf('>') + 1)}`;
+        }
+
+        // 课程选择后加载章节
+        document.getElementById('formCourse').addEventListener('change', (e) => {
+            const courseId = e.target.value;
+            const chapterSelect = document.getElementById('formChapter');
+
+            if (!courseId) {
+                chapterSelect.innerHTML = '<option value="">请先选择课程</option>';
+                return;
+            }
+
+            const course = LMS.getCourse(courseId);
+            let options = '<option value="">请选择章节</option>';
+            if (course && course.chapters) {
+                course.chapters.forEach(ch => {
+                    options += `<option value="${ch.id}">${ch.code}.00 ${ch.name}</option>`;
+                });
+            }
+
+            chapterSelect.innerHTML = options;
+        });
+
+        function openInfoModal(file) {
+            document.getElementById('formName').value = file.name.replace('.zip', '');
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = formatFileSize(file.size);
+            document.getElementById('infoModal').classList.add('active');
+        }
+
+        function closeInfoModal() {
+            document.getElementById('infoModal').classList.remove('active');
+            currentFile = null;
+        }
+
+        document.getElementById('infoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!currentFile) {
+                LMS.showToast('请先选择文件', 'error');
+                return;
+            }
+
+            const data = {
+                name: document.getElementById('formName').value.trim(),
+                courseId: document.getElementById('formCourse').value,
+                chapterId: document.getElementById('formChapter').value,
+                duration: parseInt(document.getElementById('formDuration').value) * 60, // 转成秒
+                hasTest: document.getElementById('formHasTest').value === 'true',
+                fileName: currentFile.name,
+                fileSize: currentFile.size
+            };
+
+            if (!data.courseId || !data.chapterId) {
+                LMS.showToast('请选择课程和章节', 'error');
+                return;
+            }
+
+            try {
+                // 模拟上传过程
+                const uploadBtn = e.submitter;
+                const originalText = uploadBtn.textContent;
+                uploadBtn.disabled = true;
+                uploadBtn.textContent = '上传中...';
+
+                // 这里实际上传逻辑在演示版中简化，实际需要后端处理
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                LMS.addCourseware(data);
+                LMS.showToast('课件上传成功', 'success');
+                closeInfoModal();
+                loadCourseware();
+            } catch (err) {
+                LMS.showToast('上传失败: ' + err.message, 'error');
+            }
+        });
+
+        function loadCourseware() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const courseId = document.getElementById('courseFilter').value;
+            const courseware = LMS.getCourseware();
+            const courses = LMS.getCourses();
+            const container = document.getElementById('coursewareList');
+
+            const filtered = courseware.filter(cw => 
+                (!courseId || cw.courseId === courseId) &&
+                cw.name.toLowerCase().includes(search)
+            );
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="padding: 40px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        <h4>暂无课件</h4>
+                        <p>上传ZIP格式的HTML课件包开始使用</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(cw => {
+                const course = courses.find(c => c.id === cw.courseId);
+                const chapter = course?.chapters?.find(ch => ch.id === cw.chapterId);
+
+                html += `
+                    <div class="courseware-item">
+                        <div class="courseware-info">
+                            <div class="courseware-name">${cw.name}</div>
+                            <div class="courseware-meta">
+                                <span>课程：${course?.name || '未知'}</span>
+                                <span>章节：${chapter ? `${chapter.code}.00 ${chapter.name}` : '未知'}</span>
+                                <span>时长：${Math.round(cw.duration / 60)} 分钟</span>
+                                <span>类型：${cw.hasTest ? '含测试' : '仅学习'}</span>
+                                <span>大小：${formatFileSize(cw.fileSize || 0)}</span>
+                                <span>上传时间：${LMS.formatDate(cw.createdAt)}</span>
+                            </div>
+                        </div>
+                        <div class="courseware-actions">
+                            <button class="btn btn-secondary" onclick="previewCourseware('${cw.id}')">预览</button>
+                            <button class="btn btn-danger" onclick="deleteCourseware('${cw.id}', '${cw.name}')">删除</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function previewCourseware(id) {
+            // 打开预览页面
+            window.open(`/courseware/preview.html?id=${id}`, '_blank');
+        }
+
+        function deleteCourseware(id, name) {
+            if (confirm(`确定要删除课件 "${name}" 吗？`)) {
+                LMS.deleteCourseware(id);
+                LMS.showToast('课件已删除', 'success');
+                loadCourseware();
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        document.getElementById('infoModal').addEventListener('click', (e) => {
+            if (e.target.id === 'infoModal') {
+                closeInfoModal();
+            }
+        });
+    </script>
+</body>
+</html>
