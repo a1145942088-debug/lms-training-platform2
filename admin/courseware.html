@@ -346,36 +346,49 @@
     function previewCourseware(id) {
       currentPreviewCourseware = LMS.CoursewareManager.getById(id);
       if (!currentPreviewCourseware) {
-        LMS.UI.toast('课件不存在', 'error');
+        showToast('课件不存在', 'error');
         return;
       }
       
-      document.getElementById('previewTitle').textContent = '预览：' + currentPreviewCourseware.name;
-      
       // 显示预览Modal
       document.getElementById('previewModal').style.display = 'flex';
+      document.getElementById('previewTitle').textContent = '预览：' + currentPreviewCourseware.name;
       
-      // 由于纯前端无法真正存储文件，这里显示演示模式
-      const iframe = document.getElementById('previewIframe');
-      const placeholder = document.getElementById('previewPlaceholder');
-      const placeholderText = document.getElementById('previewPlaceholderText');
+      var iframe = document.getElementById('previewIframe');
+      var placeholder = document.getElementById('previewPlaceholder');
       
-      // 检查是否有课件URL（如果有的话）
+      // 检查是否有课件URL
       if (currentPreviewCourseware.url) {
         iframe.src = currentPreviewCourseware.url;
         iframe.style.display = 'block';
         placeholder.style.display = 'none';
       } else {
-        // 显示演示模式
+        // 显示说明
         iframe.style.display = 'none';
         placeholder.style.display = 'flex';
-        placeholderText.innerHTML = `
-          <strong>${currentPreviewCourseware.name}</strong><br>
-          <span style="font-size:13px;color:#999;">
-            入口文件：${currentPreviewCourseware.entryFile || 'index.html'}<br>
-            课件已记录，上传ZIP包后将通过iframe嵌入播放
-          </span>
-        `;
+        
+        var entryFile = currentPreviewCourseware.entryFile || 'index.html';
+        var fileName = currentPreviewCourseware.fileName || entryFile;
+        
+        placeholder.innerHTML = '<div style="text-align:center;max-width:500px;">' +
+          '<div style="font-size:64px;margin-bottom:16px;">📖</div>' +
+          '<h3 style="color:#333;margin-bottom:16px;">' + currentPreviewCourseware.name + '</h3>' +
+          '<div style="background:#e3f2fd;padding:20px;border-radius:12px;text-align:left;margin-bottom:16px;">' +
+            '<p style="color:#1565c0;margin-bottom:8px;"><strong>📁 课件信息</strong></p>' +
+            '<p style="color:#666;font-size:14px;margin-bottom:4px;">• 文件名：' + fileName + '</p>' +
+            '<p style="color:#666;font-size:14px;margin-bottom:4px;">• 入口文件：' + entryFile + '</p>' +
+            '<p style="color:#666;font-size:14px;margin-bottom:4px;">• 预计时长：' + (currentPreviewCourseware.duration || 30) + ' 分钟</p>' +
+            '<p style="color:#666;font-size:14px;">• 课件类型：' + ((currentPreviewCourseware.type === 'html5') ? 'HTML5互动课件' : currentPreviewCourseware.type) + '</p>' +
+          '</div>' +
+          '<div style="background:#fff3cd;padding:16px;border-radius:8px;text-align:left;">' +
+            '<p style="color:#856404;font-size:13px;"><strong>⚠️ 预览说明</strong></p>' +
+            '<p style="color:#856404;font-size:13px;margin-top:8px;">由于当前是纯前端演示模式，课件文件存储在本地浏览器中，无法直接在网页中嵌入预览。</p>' +
+            '<p style="color:#856404;font-size:13px;margin-top:8px;">实际使用时，请通过以下方式预览：</p>' +
+            '<p style="color:#856404;font-size:13px;margin-top:8px;">1. 部署到服务器后，在"课件上传"页面点击"预览"按钮</p>' +
+            '<p style="color:#856404;font-size:13px;margin-top:4px;">2. 学员端进入课程学习页面后自动播放</p>' +
+            '<p style="color:#856404;font-size:13px;margin-top:4px;">3. 下载ZIP包到本地，使用浏览器打开 index.html 预览</p>' +
+          '</div>' +
+        '</div>';
       }
     }
     

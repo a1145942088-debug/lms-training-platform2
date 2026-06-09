@@ -3,86 +3,333 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>课程分配 - 航空培训在线学习平台</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../shared/styles.css">
+  <title>课程分配 - C919系统CBT培训平台</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+      background: #f8fafc;
+    }
+    .page-container { display: flex; min-height: 100vh; }
+    
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: linear-gradient(180deg, #0d3a5e 0%, #1a5fb4 100%);
+      color: white;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      overflow-y: auto;
+    }
+    .sidebar-logo {
+      padding: 24px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .sidebar-logo svg { width: 36px; height: 36px; }
+    .sidebar-logo span { font-size: 16px; font-weight: 600; }
+    .sidebar-nav { padding: 16px 0; }
+    .sidebar-section { margin-bottom: 8px; }
+    .sidebar-title {
+      padding: 8px 20px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: rgba(255,255,255,0.5);
+    }
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .sidebar-link:hover { background: rgba(255,255,255,0.1); color: white; }
+    .sidebar-link.active { background: rgba(255,255,255,0.15); color: white; border-left: 3px solid #4fc3f7; }
+    .sidebar-link svg { width: 20px; height: 20px; }
+    
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      margin-left: 260px;
+      padding: 24px;
+    }
+    .main-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .breadcrumb { font-size: 14px; color: #666; }
+    .breadcrumb a { color: #1a5fb4; text-decoration: none; }
+    .breadcrumb span { margin: 0 8px; color: #ccc; }
+    
+    /* Buttons */
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: #1a5fb4; color: white; }
+    .btn-primary:hover { background: #0d47a1; }
+    .btn-secondary { background: #e2e8f0; color: #2d3748; }
+    .btn-secondary:hover { background: #cbd5e0; }
+    .btn-sm { padding: 6px 12px; font-size: 13px; }
+    .btn-danger { background: #e53e3e; color: white; }
+    
+    /* Card */
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #eee;
+    }
+    .card-title { font-size: 16px; font-weight: 600; }
+    
+    /* Filter Bar */
+    .filter-bar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .filter-bar select, .filter-bar input {
+      padding: 8px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 14px;
+      min-width: 150px;
+    }
+    
+    /* Table */
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #eee; }
+    th { font-weight: 600; color: #666; font-size: 12px; text-transform: uppercase; background: #f8fafc; }
+    tr:hover { background: #f8fafc; }
+    
+    /* Badge */
+    .badge {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .badge-success { background: #c6f6d5; color: #276749; }
+    .badge-warning { background: #fefcbf; color: #975a16; }
+    .badge-primary { background: #bee3f8; color: #2b6cb0; }
+    
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: white;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow: hidden;
+    }
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-title { font-size: 18px; font-weight: 600; }
+    .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #999; }
+    .modal-body { padding: 24px; max-height: 60vh; overflow-y: auto; }
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid #eee;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .form-group input:focus, .form-group select:focus {
+      outline: none;
+      border-color: #1a5fb4;
+      box-shadow: 0 0 0 3px rgba(26,95,180,0.1);
+    }
+    .tip-box {
+      background: #e3f2fd;
+      padding: 16px;
+      border-radius: 8px;
+      margin-top: 16px;
+      font-size: 13px;
+      color: #1565c0;
+    }
+    
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      color: white;
+      font-size: 14px;
+      z-index: 2000;
+      animation: slideIn 0.3s ease;
+    }
+    .toast-success { background: #38a169; }
+    .toast-error { background: #e53e3e; }
+    .toast-warning { background: #dd6b20; }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+  </style>
 </head>
 <body>
   <div class="page-container">
+    <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-logo">
-        <svg width="36" height="36" viewBox="0 0 80 80" fill="none"><rect width="80" height="80" rx="16" fill="rgba(255,255,255,0.2)"/><path d="M40 15L55 35H25L40 15Z" fill="white" opacity="0.9"/><path d="M40 35V55M35 50H45" stroke="white" stroke-width="3" stroke-linecap="round"/></svg>
+        <svg width="36" height="36" viewBox="0 0 80 80" fill="none">
+          <rect width="80" height="80" rx="16" fill="rgba(255,255,255,0.2)"/>
+          <path d="M40 15L55 35H25L40 15Z" fill="white"/>
+          <path d="M40 35V55M35 50H45" stroke="white" stroke-width="3" stroke-linecap="round"/>
+        </svg>
         <span>管理后台</span>
       </div>
       <nav class="sidebar-nav">
-        <div class="sidebar-section"><div class="sidebar-title">概览</div>
-          <a href="dashboard.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>仪表盘</span></a>
+        <div class="sidebar-section">
+          <div class="sidebar-title">概览</div>
+          <a href="dashboard.html" class="sidebar-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            <span>仪表盘</span>
+          </a>
         </div>
-        <div class="sidebar-section"><div class="sidebar-title">学员管理</div>
-          <a href="students.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span>学员管理</span></a>
-          <a href="assignments.html" class="sidebar-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg><span>课程分配</span></a>
+        <div class="sidebar-section">
+          <div class="sidebar-title">学员管理</div>
+          <a href="students.html" class="sidebar-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            <span>学员管理</span>
+          </a>
+          <a href="assignments.html" class="sidebar-link active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+            <span>课程分配</span>
+          </a>
         </div>
-        <div class="sidebar-section"><div class="sidebar-title">课程管理</div>
-          <a href="courses.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>课程管理</span></a>
-          <a href="courseware.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg><span>课件管理</span></a>
+        <div class="sidebar-section">
+          <div class="sidebar-title">课程管理</div>
+          <a href="courses.html" class="sidebar-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            <span>ATA系统</span>
+          </a>
+          <a href="courseware.html" class="sidebar-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            <span>课件上传</span>
+          </a>
         </div>
-        <div class="sidebar-section"><div class="sidebar-title">数据统计</div>
-          <a href="records.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>学习记录</span></a>
-          <a href="reports.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>统计报表</span></a>
+        <div class="sidebar-section">
+          <div class="sidebar-title">数据统计</div>
+          <a href="records.html" class="sidebar-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <span>学习记录</span>
+          </a>
+          <a href="reports.html" class="sidebar-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span>统计报表</span>
+          </a>
         </div>
       </nav>
     </aside>
     
-    <div style="flex:1;margin-left:260px;">
-      <header class="main-header">
-        <div class="breadcrumb"><a href="dashboard.html">首页</a><span>/</span><span>课程分配</span></div>
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="main-header">
+        <div class="breadcrumb">
+          <a href="dashboard.html">首页</a>
+          <span>/</span>
+          <span>课程分配</span>
+        </div>
         <button class="btn btn-primary" onclick="openAssignModal()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           新建分配
         </button>
-      </header>
+      </div>
       
-      <div style="padding:24px;">
-        <div class="card" style="margin-bottom:24px;">
-          <div class="filter-bar">
-            <select id="filterStudent">
-              <option value="">全部学员</option>
-            </select>
-            <select id="filterCourse">
-              <option value="">全部课程</option>
-            </select>
-            <select id="filterStatus">
-              <option value="">全部状态</option>
-              <option value="assigned">已分配</option>
-              <option value="completed">已完成</option>
-            </select>
-            <button class="btn btn-secondary" onclick="loadAssignments()">筛选</button>
-          </div>
+      <!-- Filter -->
+      <div class="card">
+        <div class="filter-bar">
+          <select id="filterStudent">
+            <option value="">全部学员</option>
+          </select>
+          <select id="filterCourse">
+            <option value="">全部课程</option>
+          </select>
+          <select id="filterStatus">
+            <option value="">全部状态</option>
+            <option value="assigned">已分配</option>
+            <option value="completed">已完成</option>
+          </select>
+          <button class="btn btn-secondary btn-sm" onclick="loadAssignments()">筛选</button>
         </div>
-        
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">分配记录</h3>
-            <span id="totalCount" style="color:var(--text-secondary);font-size:13px;">共 0 条</span>
-          </div>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>学员</th>
-                  <th>课程</th>
-                  <th>分配时间</th>
-                  <th>截止日期</th>
-                  <th>完成状态</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody id="assignmentsTable">
-                <tr><td colspan="6" style="text-align:center;padding:32px;"><div class="loading"><div class="spinner"></div></div></td></tr>
-              </tbody>
-            </table>
-          </div>
+      </div>
+      
+      <!-- Table -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">分配记录</h3>
+          <span id="totalCount" style="color:#666;font-size:13px;">共 0 条</span>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>学员</th>
+                <th>课程</th>
+                <th>ATA章节</th>
+                <th>分配时间</th>
+                <th>完成状态</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="assignmentsTable">
+              <tr><td colspan="6" style="text-align:center;padding:32px;color:#999;">加载中...</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -90,7 +337,7 @@
   
   <!-- Assign Modal -->
   <div class="modal-overlay" id="assignModal">
-    <div class="modal" style="max-width:600px;">
+    <div class="modal">
       <div class="modal-header">
         <h3 class="modal-title">新建课程分配</h3>
         <button class="modal-close" onclick="closeModal('assignModal')">×</button>
@@ -104,7 +351,7 @@
             </select>
           </div>
           <div class="form-group">
-            <label>选择课程 *</label>
+            <label>选择课程（ATA系统）*</label>
             <select id="assignCourse" required>
               <option value="">选择课程</option>
             </select>
@@ -113,8 +360,8 @@
             <label>截止日期</label>
             <input type="date" id="assignDueDate">
           </div>
-          <div style="background:var(--bg-primary);padding:16px;border-radius:8px;margin-top:16px;">
-            <p style="font-size:13px;color:var(--text-secondary);">💡 提示：分配后学员可以在学习中心看到这门课程，并开始学习。</p>
+          <div class="tip-box">
+            💡 提示：分配后学员可以在学习中心看到这门课程，并开始学习。
           </div>
         </form>
       </div>
@@ -127,119 +374,196 @@
 
   <script src="../shared/app.js"></script>
   <script>
+    // Toast提示
+    function showToast(message, type) {
+      var toast = document.createElement('div');
+      toast.className = 'toast toast-' + (type || 'success');
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(function() { toast.remove(); }, 3000);
+    }
+    
     document.addEventListener('DOMContentLoaded', function() {
+      // 初始化数据
       LMS.initializeMockData();
-      const user = LMS.Auth.init();
-      if (!user || user.role !== 'admin') { window.location.href = 'login.html'; return; }
+      
+      var user = LMS.Auth.init();
+      if (!user || (user.role !== 'admin' && user.role !== 'super_admin')) { 
+        window.location.href = 'login.html'; 
+        return; 
+      }
       
       loadFilters();
       loadAssignments();
     });
     
     function loadFilters() {
-      const students = LMS.StudentManager.getAll();
-      const courses = LMS.CourseManager.getAll().filter(c => c.status === 'published');
+      // 获取所有学员（从用户数据中过滤）
+      var users = LMS.Storage.get('users') || [];
+      var students = users.filter(function(u) { return u.role === 'student'; });
       
+      // 获取所有课程（同时支持 CourseManager 和 ATAManager）
+      var courseManagerCourses = LMS.CourseManager.getAll() || [];
+      var ataSystems = LMS.ATAManager.getAll() || [];
+      
+      // 合并课程列表
+      var allCourses = [];
+      
+      // 添加 CourseManager 的课程
+      courseManagerCourses.forEach(function(c) {
+        allCourses.push({
+          id: c.id,
+          name: c.name,
+          ataCode: c.ataCode || '',
+          type: 'course'
+        });
+      });
+      
+      // 添加 ATAManager 的系统
+      ataSystems.forEach(function(s) {
+        allCourses.push({
+          id: s.id,
+          name: s.name,
+          ataCode: s.ataCode || '',
+          type: 'ata'
+        });
+      });
+      
+      // 渲染学员下拉框
       document.getElementById('filterStudent').innerHTML = '<option value="">全部学员</option>' + 
-        students.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-      document.getElementById('filterCourse').innerHTML = '<option value="">全部课程</option>' + 
-        courses.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        students.map(function(s) { 
+          return '<option value="' + s.id + '">' + s.name + '</option>'; 
+        }).join('');
       
       document.getElementById('assignStudent').innerHTML = '<option value="">选择学员</option>' + 
-        students.map(s => `<option value="${s.id}">${s.name} (${s.email})</option>`).join('');
-      document.getElementById('assignCourse').innerHTML = '<option value="">选择课程</option>' + 
-        courses.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        students.map(function(s) { 
+          return '<option value="' + s.id + '">' + s.name + ' (' + (s.email || s.username) + ')</option>'; 
+        }).join('');
+      
+      // 渲染课程下拉框（带ATA代码标识）
+      var courseOptions = '<option value="">全部课程</option>' + 
+        allCourses.map(function(c) { 
+          var prefix = c.ataCode ? 'ATA ' + c.ataCode + ' - ' : '';
+          return '<option value="' + c.id + '" data-type="' + c.type + '">' + prefix + c.name + '</option>'; 
+        }).join('');
+      
+      document.getElementById('filterCourse').innerHTML = courseOptions;
+      document.getElementById('assignCourse').innerHTML = courseOptions.replace('全部课程', '选择课程');
     }
     
     function loadAssignments() {
-      const tbody = document.getElementById('assignmentsTable');
-      const studentFilter = document.getElementById('filterStudent').value;
-      const courseFilter = document.getElementById('filterCourse').value;
+      var tbody = document.getElementById('assignmentsTable');
+      var studentFilter = document.getElementById('filterStudent').value;
+      var courseFilter = document.getElementById('filterCourse').value;
       
-      let assignments = LMS.AssignmentManager.getAll();
-      const students = LMS.StudentManager.getAll();
-      const courses = LMS.CourseManager.getAll();
-      const records = LMS.LearningTracker.getAllRecords();
+      var assignments = LMS.AssignmentManager.getAll() || [];
+      var users = LMS.Storage.get('users') || [];
+      var students = users.filter(function(u) { return u.role === 'student'; });
       
-      if (studentFilter) assignments = assignments.filter(a => a.userId === studentFilter);
-      if (courseFilter) assignments = assignments.filter(a => a.courseId === courseFilter);
+      // 获取所有课程
+      var courseManagerCourses = LMS.CourseManager.getAll() || [];
+      var ataSystems = LMS.ATAManager.getAll() || [];
       
-      document.getElementById('totalCount').textContent = `共 ${assignments.length} 条`;
+      // 筛选
+      if (studentFilter) {
+        assignments = assignments.filter(function(a) { return a.userId === studentFilter; });
+      }
+      if (courseFilter) {
+        assignments = assignments.filter(function(a) { return a.courseId === courseFilter; });
+      }
+      
+      document.getElementById('totalCount').textContent = '共 ' + assignments.length + ' 条';
       
       if (assignments.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-secondary);padding:32px;">暂无分配记录</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;padding:32px;">暂无分配记录</td></tr>';
         return;
       }
       
-      tbody.innerHTML = assignments.map(a => {
-        const student = students.find(s => s.id === a.userId);
-        const course = courses.find(c => c.id === a.courseId);
-        const courseRecords = records.filter(r => r.userId === a.userId && r.courseId === a.courseId);
-        const isCompleted = courseRecords.some(r => r.status === 'completed');
-        const statusClass = isCompleted ? 'badge-success' : 'badge-warning';
-        const statusText = isCompleted ? '已完成' : '进行中';
-        const dueDate = a.dueDate ? LMS.UI.formatDate(a.dueDate, 'date') : '无限制';
+      tbody.innerHTML = assignments.map(function(a) {
+        var student = students.find(function(s) { return s.id === a.userId; });
         
-        return `
-          <tr>
-            <td><strong>${student?.name || '未知'}</strong></td>
-            <td>${course?.name || '未知课程'}</td>
-            <td>${LMS.UI.formatDate(a.assignedAt, 'date')}</td>
-            <td>${dueDate}</td>
-            <td><span class="badge ${statusClass}">${statusText}</span></td>
-            <td>
-              <button class="action-btn delete" onclick="deleteAssignment('${a.id}')">删除</button>
-            </td>
-          </tr>
-        `;
+        // 查找课程（可能在 CourseManager 或 ATAManager 中）
+        var course = courseManagerCourses.find(function(c) { return c.id === a.courseId; });
+        if (!course) {
+          course = ataSystems.find(function(s) { return s.id === a.courseId; });
+        }
+        
+        var courseName = course ? course.name : '未知课程';
+        var ataCode = course ? (course.ataCode || '') : '';
+        
+        // 获取学习记录判断是否完成
+        var records = LMS.LearningTracker.getAllRecords() || [];
+        var courseRecords = records.filter(function(r) { 
+          return r.userId === a.userId && r.courseId === a.courseId; 
+        });
+        var isCompleted = courseRecords.some(function(r) { return r.status === 'completed'; });
+        
+        var statusClass = isCompleted ? 'badge-success' : 'badge-warning';
+        var statusText = isCompleted ? '已完成' : '进行中';
+        var assignedDate = a.assignedAt ? new Date(a.assignedAt).toLocaleDateString() : '-';
+        
+        return '<tr>' +
+          '<td><strong>' + (student ? student.name : '未知') + '</strong></td>' +
+          '<td>' + courseName + '</td>' +
+          '<td>' + (ataCode ? '<span class="badge badge-primary">ATA ' + ataCode + '</span>' : '-') + '</td>' +
+          '<td>' + assignedDate + '</td>' +
+          '<td><span class="badge ' + statusClass + '">' + statusText + '</span></td>' +
+          '<td><button class="btn btn-danger btn-sm" onclick="deleteAssignment(\'' + a.id + '\')">删除</button></td>' +
+        '</tr>';
       }).join('');
     }
     
     function openAssignModal() {
       document.getElementById('assignForm').reset();
-      LMS.UI.openModal('assignModal');
+      loadFilters(); // 刷新下拉框
+      document.getElementById('assignModal').classList.add('active');
+    }
+    
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
     }
     
     function saveAssignment() {
-      const userId = document.getElementById('assignStudent').value;
-      const courseId = document.getElementById('assignCourse').value;
-      const dueDate = document.getElementById('assignDueDate').value;
+      var userId = document.getElementById('assignStudent').value;
+      var courseId = document.getElementById('assignCourse').value;
+      var dueDate = document.getElementById('assignDueDate').value;
       
       if (!userId || !courseId) {
-        LMS.UI.toast('请选择学员和课程', 'error');
+        showToast('请选择学员和课程', 'error');
         return;
       }
       
       // 检查是否已分配
-      const existing = LMS.AssignmentManager.getAll().find(a => 
-        a.userId === userId && a.courseId === courseId
-      );
+      var assignments = LMS.AssignmentManager.getAll() || [];
+      var existing = assignments.find(function(a) { 
+        return a.userId === userId && a.courseId === courseId; 
+      });
       
       if (existing) {
-        LMS.UI.toast('该学员已分配此课程', 'warning');
+        showToast('该学员已分配此课程', 'warning');
         return;
       }
       
+      // 创建分配记录
       LMS.AssignmentManager.create({
-        userId,
-        courseId,
-        dueDate: dueDate || null
+        userId: userId,
+        courseId: courseId,
+        dueDate: dueDate || null,
+        assignedAt: new Date().toISOString()
       });
       
       closeModal('assignModal');
       loadAssignments();
-      LMS.UI.toast('分配成功', 'success');
+      showToast('分配成功', 'success');
     }
     
     function deleteAssignment(id) {
       if (confirm('确定要删除这条分配记录吗？')) {
         LMS.AssignmentManager.delete(id);
         loadAssignments();
-        LMS.UI.toast('已删除', 'success');
+        showToast('已删除', 'success');
       }
     }
-    
-    function closeModal(id) { LMS.UI.closeModal(id); }
   </script>
 </body>
 </html>
