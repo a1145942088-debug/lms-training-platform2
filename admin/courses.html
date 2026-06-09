@@ -1,591 +1,482 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>课程管理 - 航空CBT培训平台</title>
-    <link rel="stylesheet" href="../shared/styles.css">
-    <style>
-        .course-card {
-            position: relative;
-        }
-        
-        .course-card .badge {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-        }
-        
-        .course-header {
-            background: linear-gradient(135deg, var(--primary-dark) 0%, #2d4a6f 100%);
-            color: white;
-            padding: 16px;
-        }
-        
-        .course-header h4 {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-        
-        .course-header .course-code {
-            font-size: 12px;
-            opacity: 0.8;
-        }
-        
-        .course-body {
-            padding: 16px;
-        }
-        
-        .course-meta {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-            margin-bottom: 16px;
-            font-size: 13px;
-        }
-        
-        .course-meta-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--text-gray);
-        }
-        
-        .course-actions {
-            display: flex;
-            gap: 8px;
-            justify-content: flex-end;
-            border-top: 1px solid var(--border-color);
-            padding-top: 12px;
-        }
-        
-        .course-actions button {
-            padding: 8px 12px;
-            font-size: 12px;
-        }
-        
-        .form-section {
-            margin-bottom: 24px;
-            padding-bottom: 24px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .form-section:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-        
-        .chapter-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            background: var(--bg-light);
-            border-radius: 8px;
-            margin-bottom: 8px;
-        }
-        
-        .chapter-item input {
-            flex: 1;
-            padding: 8px 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-        }
-        
-        .chapter-item .delete-btn {
-            background: var(--danger-red);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            width: 32px;
-            height: 32px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ATA系统管理 - C919系统CBT培训平台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/styles.css">
+  <style>
+    .ata-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+    .ata-card {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      transition: all 0.3s;
+    }
+    .ata-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.12); transform: translateY(-2px); }
+    .ata-header {
+      padding: 20px;
+      background: linear-gradient(135deg, #1565c0, #0d47a1);
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .ata-code { font-size: 36px; font-weight: 800; }
+    .ata-info h3 { font-size: 16px; margin-bottom: 4px; }
+    .ata-info span { font-size: 12px; opacity: 0.8; }
+    .ata-body { padding: 16px 20px; }
+    .ata-stats { display: flex; justify-content: space-between; font-size: 13px; color: #666; margin-bottom: 12px; }
+    .ata-actions { display: flex; gap: 8px; padding: 16px 20px; border-top: 1px solid #eee; }
+    
+    /* 模态框 */
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: white; border-radius: 16px; width: 90%; max-width: 600px; max-height: 90vh; overflow: hidden; }
+    .modal-header { padding: 20px 24px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+    .modal-title { font-size: 18px; font-weight: 600; }
+    .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #999; }
+    .modal-body { padding: 24px; max-height: 60vh; overflow-y: auto; }
+    .modal-footer { padding: 16px 24px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 12px; }
+    
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: #333; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      outline: none; border-color: #1565c0; box-shadow: 0 0 0 3px rgba(21,101,192,0.1);
+    }
+    
+    .chapter-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px; background: #f8fafc; border-radius: 8px; margin-bottom: 8px;
+    }
+    .chapter-item input { flex: 1; }
+    .chapter-item .duration { width: 80px; }
+    .chapter-item button { background: #f44336; color: white; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; }
+    
+    .btn-add-chapter {
+      width: 100%; padding: 10px; border: 2px dashed #ddd; border-radius: 8px;
+      background: none; color: #666; cursor: pointer; margin-top: 8px;
+    }
+    .btn-add-chapter:hover { border-color: #1565c0; color: #1565c0; }
+    
+    /* 文件上传区 */
+    .upload-zone {
+      border: 2px dashed #ddd; border-radius: 12px; padding: 40px; text-align: center;
+      background: #fafafa; transition: all 0.3s; cursor: pointer;
+    }
+    .upload-zone:hover, .upload-zone.dragover { border-color: #1565c0; background: #e3f2fd; }
+    .upload-zone input { display: none; }
+    .upload-icon { font-size: 48px; margin-bottom: 16px; }
+    .upload-text { color: #666; margin-bottom: 8px; }
+    .upload-hint { font-size: 12px; color: #999; }
+    
+    .file-list { margin-top: 16px; }
+    .file-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px; background: #f5f5f5; border-radius: 8px; margin-bottom: 8px;
+    }
+    .file-item span { font-size: 13px; color: #333; }
+    .file-item button { background: none; border: none; color: #999; cursor: pointer; font-size: 18px; }
+    .file-item button:hover { color: #f44336; }
+  </style>
 </head>
 <body>
-    <div class="main-layout">
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h2>航空CBT培训</h2>
-                <p>管理员后台</p>
-            </div>
-            <nav class="sidebar-nav">
-                <a href="dashboard.html" class="nav-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                        <polyline points="9 22 9 12 15 12 15 22"/>
-                    </svg>
-                    仪表盘
-                </a>
-                <a href="students.html" class="nav-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                        <circle cx="9" cy="7" r="4"/>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                    </svg>
-                    学员管理
-                </a>
-                <a href="courses.html" class="nav-item active">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                    </svg>
-                    课程管理
-                </a>
-                <a href="courseware.html" class="nav-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14 2 14 8 20 8"/>
-                        <line x1="8" y1="13" x2="16" y2="13"/>
-                        <line x1="8" y1="17" x2="16" y2="17"/>
-                        <polyline points="10 9 9 9 8 9"/>
-                    </svg>
-                    课件管理
-                </a>
-                <a href="assignments.html" class="nav-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                        <line x1="16" y1="2" x2="16" y2="6"/>
-                        <line x1="8" y1="2" x2="8" y2="6"/>
-                        <line x1="3" y1="10" x2="21" y2="10"/>
-                    </svg>
-                    课程分配
-                </a>
-                <a href="records.html" class="nav-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14 2 14 8 20 8"/>
-                        <line x1="16" y1="13" x2="8" y2="13"/>
-                        <line x1="16" y1="17" x2="8" y2="17"/>
-                    </svg>
-                    学习记录
-                </a>
-                <a href="reports.html" class="nav-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 3v18h18"/>
-                        <path d="M18 17V9"/>
-                        <path d="M13 17V5"/>
-                        <path d="M8 17v-3"/>
-                    </svg>
-                    统计报表
-                </a>
-                <div class="nav-divider"></div>
-                <a href="#" class="nav-item" onclick="LMS.logout(); return false;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                        <polyline points="16 17 21 12 16 7"/>
-                        <line x1="21" y1="12" x2="9" y2="12"/>
-                    </svg>
-                    退出登录
-                </a>
-            </nav>
-        </aside>
-
-        <main class="main-content">
-            <header class="header">
-                <div class="header-left">
-                    <h1>课程管理</h1>
-                </div>
-                <div class="header-right">
-                    <div class="user-info">
-                        <div class="user-avatar" id="userAvatar">管</div>
-                        <div>
-                            <div class="user-name" id="userName">加载中...</div>
-                            <div class="user-role">管理员</div>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            <div class="page-content">
-                <div class="toolbar">
-                    <div class="toolbar-left">
-                        <div class="search-box">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="11" cy="11" r="8"/>
-                                <path d="m21 21-4.35-4.35"/>
-                            </svg>
-                            <input type="text" id="searchInput" placeholder="搜索课程名称/编号/机型...">
-                        </div>
-                        <select id="categoryFilter">
-                            <option value="">全部类型</option>
-                            <option value="CBT">CBT 系统培训</option>
-                            <option value="ACPC">ACPC 预备课程</option>
-                            <option value="PBN">PBN 性能导航</option>
-                        </select>
-                    </div>
-                    <div class="toolbar-right">
-                        <button class="btn btn-primary" onclick="openAddModal()">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="12" y1="5" x2="12" y2="19"/>
-                                <line x1="5" y1="12" x2="19" y2="12"/>
-                            </svg>
-                            创建课程
-                        </button>
-                    </div>
-                </div>
-
-                <div class="course-grid" id="courseList">
-                    <div class="loading">
-                        <div class="spinner"></div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- 添加/编辑课程模态框 -->
-    <div class="modal-overlay" id="courseModal" style="max-height: 90vh; overflow-y: auto;">
-        <div class="modal" style="max-width: 700px; max-height: 90vh;">
-            <div class="modal-header">
-                <h3 id="modalTitle">创建课程</h3>
-                <button class="modal-close" onclick="closeModal()">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"/>
-                        <line x1="6" y1="6" x2="18" y2="18"/>
-                    </svg>
-                </button>
-            </div>
-            <form id="courseForm">
-                <div class="modal-body">
-                    <div class="form-section">
-                        <h4 style="margin-bottom: 16px; font-size: 16px;">基本信息</h4>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>课程编号 <span style="color: red;">*</span></label>
-                                <input type="text" id="formCode" placeholder="例如：CBT-B737NG" required>
-                            </div>
-                            <div class="form-group">
-                                <label>课程类型 <span style="color: red;">*</span></label>
-                                <select id="formCategory" required>
-                                    <option value="CBT">CBT 系统培训</option>
-                                    <option value="ACPC">ACPC 预备课程</option>
-                                    <option value="PBN">PBN 性能导航</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>课程名称 <span style="color: red;">*</span></label>
-                                <input type="text" id="formName" placeholder="例如：波音737NG系统培训" required>
-                            </div>
-                            <div class="form-group">
-                                <label>适用机型</label>
-                                <input type="text" id="formAircraft" placeholder="例如：Boeing 737 NG">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>课程描述</label>
-                            <textarea id="formDescription" rows="3" class="form-control" style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px;" placeholder="描述课程内容和学习目标..."></textarea>
-                        </div>
-                    </div>
-
-                    <div class="form-section">
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-                            <h4 style="font-size: 16px;">课程章节</h4>
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="addChapter()">
-                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                                    <line x1="12" y1="5" x2="12" y2="19"/>
-                                    <line x1="5" y1="12" x2="19" y2="12"/>
-                                </svg>
-                                添加章节
-                            </button>
-                        </div>
-                        <div id="chaptersContainer">
-                            <div class="chapter-item">
-                                <input type="text" placeholder="章节编号" class="chapter-code" style="width: 80px;">
-                                <input type="text" placeholder="章节名称" class="chapter-name">
-                                <button type="button" class="delete-btn" onclick="removeChapter(this)">
-                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polyline points="3 6 5 6 21 6"/>
-                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()">取消</button>
-                    <button type="submit" class="btn btn-primary">保存课程</button>
-                </div>
-            </form>
+  <div class="page-container">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <svg width="36" height="36" viewBox="0 0 80 80" fill="none">
+          <rect width="80" height="80" rx="16" fill="rgba(255,255,255,0.2)"/>
+          <path d="M40 15L55 35H25L40 15Z" fill="white"/>
+          <path d="M25 35L40 55L55 35" stroke="white" stroke-width="3" fill="none"/>
+        </svg>
+        <span>管理后台</span>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-section"><div class="sidebar-title">概览</div>
+          <a href="dashboard.html" class="sidebar-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>仪表盘</span>
+          </a>
         </div>
+        <div class="sidebar-section"><div class="sidebar-title">学员管理</div>
+          <a href="students.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span>学员管理</span></a>
+          <a href="assignments.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg><span>课程分配</span></a>
+        </div>
+        <div class="sidebar-section"><div class="sidebar-title">ATA系统管理</div>
+          <a href="courses.html" class="sidebar-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>ATA系统</span></a>
+          <a href="courseware.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg><span>课件上传</span></a>
+        </div>
+        <div class="sidebar-section"><div class="sidebar-title">数据统计</div>
+          <a href="records.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>学习记录</span></a>
+          <a href="reports.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>统计报表</span></a>
+        </div>
+      </nav>
+    </aside>
+    
+    <div style="flex:1;margin-left:260px;">
+      <header class="main-header">
+        <div class="breadcrumb">
+          <a href="dashboard.html">首页</a>
+          <span>/</span>
+          <span>ATA系统管理</span>
+        </div>
+        <div style="display:flex;gap:12px;">
+          <button class="btn btn-secondary" onclick="openUploadModal()">
+            📁 批量导入课件
+          </button>
+          <button class="btn btn-primary" onclick="openAddModal()">
+            ➕ 添加ATA系统
+          </button>
+        </div>
+      </header>
+      
+      <div style="padding:24px;">
+        <!-- 搜索筛选 -->
+        <div style="background:white;padding:16px;border-radius:12px;margin-bottom:24px;display:flex;gap:16px;align-items:center;">
+          <input type="text" id="searchInput" placeholder="搜索ATA系统..." style="flex:1;padding:10px 14px;border:1px solid #ddd;border-radius:8px;">
+          <select id="ataRange" style="padding:10px 14px;border:1px solid #ddd;border-radius:8px;">
+            <option value="">全部ATA章节</option>
+            <option value="20-29">ATA 20-29</option>
+            <option value="30-39">ATA 30-39</option>
+            <option value="70-79">ATA 70-79</option>
+          </select>
+        </div>
+        
+        <!-- 系统列表 -->
+        <div class="ata-grid" id="ataList">
+          <div style="grid-column:1/-1;text-align:center;padding:48px;"><div class="loading"><div class="spinner"></div></div></div>
+        </div>
+      </div>
     </div>
+  </div>
+  
+  <!-- 添加/编辑系统模态框 -->
+  <div class="modal-overlay" id="ataModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">添加ATA系统</h3>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="ataForm">
+          <input type="hidden" id="ataId">
+          <div class="form-group">
+            <label>ATA章节代码 *</label>
+            <input type="text" id="ataCode" required placeholder="例如：21、27、71" maxlength="2">
+          </div>
+          <div class="form-group">
+            <label>系统名称 *</label>
+            <input type="text" id="ataName" required placeholder="例如：空调与增压系统">
+          </div>
+          
+          <div class="form-group">
+            <label>章节内容</label>
+            <div id="chapterList">
+              <!-- 章节项动态添加 -->
+            </div>
+            <button type="button" class="btn-add-chapter" onclick="addChapterItem()">➕ 添加章节</button>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+        <button class="btn btn-primary" onclick="saveATA()">保存</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 批量上传模态框 -->
+  <div class="modal-overlay" id="uploadModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">批量导入ATA系统</h3>
+        <button class="modal-close" onclick="closeUploadModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+          <input type="file" id="fileInput" multiple accept=".html,.zip,.pdf" onchange="handleFileSelect(event)">
+          <div class="upload-icon">📂</div>
+          <div class="upload-text">点击或拖拽文件到此处上传</div>
+          <div class="upload-hint">支持 HTML、ZIP、PDF 格式。文件名会自动成为系统名称。</div>
+        </div>
+        <div class="file-list" id="fileList"></div>
+        <div style="margin-top:20px;padding:16px;background:#f5f5f5;border-radius:8px;font-size:13px;color:#666;">
+          <strong>说明：</strong><br>
+          • 上传的文件名将自动作为ATA系统名称<br>
+          • 系统ATA代码将从文件名中自动提取（如"ATA27飞控系统"→ ATA27）<br>
+          • 支持同时上传多个文件批量创建系统
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeUploadModal()">取消</button>
+        <button class="btn btn-primary" onclick="batchImport()">确认导入</button>
+      </div>
+    </div>
+  </div>
 
-    <script src="../shared/app.js"></script>
-    <script>
-        const user = LMS.checkAuth(['admin', 'super_admin']);
-        if (!user) {
-            window.location.href = 'login.html';
-        }
-
-        document.getElementById('userName').textContent = user.name;
-        document.getElementById('userAvatar').textContent = user.name.charAt(0);
-
-        let editingCourseId = null;
-
-        loadCourses();
-        document.getElementById('searchInput').addEventListener('input', loadCourses);
-        document.getElementById('categoryFilter').addEventListener('change', loadCourses);
-
-        function loadCourses() {
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            const category = document.getElementById('categoryFilter').value;
-            const courses = LMS.getCourses();
-            const container = document.getElementById('courseList');
-            const assignments = LMS.getAssignments();
-            const records = LMS.getLearningRecords();
-
-            const filtered = courses.filter(c => 
-                (!category || c.category === category) &&
-                (c.name.toLowerCase().includes(search) ||
-                 c.code.toLowerCase().includes(search) ||
-                 (c.aircraft && c.aircraft.toLowerCase().includes(search)) ||
-                 c.category.toLowerCase().includes(search))
-            );
-
-            if (filtered.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state" style="grid-column: 1 / -1;">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                        </svg>
-                        <h4>暂无课程数据</h4>
-                        <p>点击右上角"创建课程"开始添加</p>
-                    </div>
-                `;
-                return;
-            }
-
-            let html = '';
-            filtered.forEach(course => {
-                const courseAssignments = assignments.filter(a => a.courseId === course.id);
-                const courseRecords = records.filter(r => r.courseId === course.id);
-                const studentCount = new Set(courseAssignments.map(a => a.studentId)).size;
-
-                html += `
-                    <div class="course-card">
-                        <span class="badge badge-primary">${course.category}</span>
-                        <div class="course-header">
-                            <h4>${course.name}</h4>
-                            <div class="course-code">${course.code} · ${course.aircraft || '通用'}</div>
-                        </div>
-                        <div class="course-body">
-                            <p style="font-size: 13px; color: var(--text-gray); margin-bottom: 16px; line-height: 1.5;">
-                                ${course.description || '暂无描述'}
-                            </p>
-                            <div class="course-meta">
-                                <div class="course-meta-item">
-                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                                        <circle cx="9" cy="7" r="4"/>
-                                    </svg>
-                                    ${studentCount} 位学员
-                                </div>
-                                <div class="course-meta-item">
-                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                    </svg>
-                                    ${course.chapters?.length || 0} 个章节
-                                </div>
-                                <div class="course-meta-item">
-                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                                        <circle cx="12" cy="12" r="10"/>
-                                        <polyline points="12 6 12 12 16 14"/>
-                                    </svg>
-                                    ${(course.chapters?.length || 0) * 30} 分钟
-                                </div>
-                                <div class="course-meta-item">
-                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                                    </svg>
-                                    ${courseRecords.length} 次学习
-                                </div>
-                            </div>
-                            <div class="course-actions">
-                                <button class="btn btn-secondary" onclick="editCourse('${course.id}')">编辑</button>
-                                <button class="btn btn-danger" onclick="deleteCourse('${course.id}', '${course.name}')">删除</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-
-            container.innerHTML = html;
-        }
-
-        function openAddModal() {
-            editingCourseId = null;
-            document.getElementById('modalTitle').textContent = '创建课程';
-            document.getElementById('formCode').value = '';
-            document.getElementById('formName').value = '';
-            document.getElementById('formCategory').value = 'CBT';
-            document.getElementById('formAircraft').value = '';
-            document.getElementById('formDescription').value = '';
-            document.getElementById('chaptersContainer').innerHTML = `
-                <div class="chapter-item">
-                    <input type="text" placeholder="章节编号" class="chapter-code" style="width: 80px;">
-                    <input type="text" placeholder="章节名称" class="chapter-name">
-                    <button type="button" class="delete-btn" onclick="removeChapter(this)">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="3 6 5 6 21 6"/>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                        </svg>
-                    </button>
-                </div>
-            `;
-            document.getElementById('courseModal').classList.add('active');
-        }
-
-        function editCourse(id) {
-            const courses = LMS.getCourses();
-            const course = courses.find(c => c.id === id);
-            if (!course) return;
-
-            editingCourseId = id;
-            document.getElementById('modalTitle').textContent = '编辑课程';
-            document.getElementById('formCode').value = course.code;
-            document.getElementById('formName').value = course.name;
-            document.getElementById('formCategory').value = course.category;
-            document.getElementById('formAircraft').value = course.aircraft || '';
-            document.getElementById('formDescription').value = course.description || '';
-
-            let chaptersHtml = '';
-            if (course.chapters && course.chapters.length > 0) {
-                course.chapters.forEach(ch => {
-                    chaptersHtml += `
-                        <div class="chapter-item">
-                            <input type="text" placeholder="章节编号" class="chapter-code" style="width: 80px;" value="${ch.code}">
-                            <input type="text" placeholder="章节名称" class="chapter-name" value="${ch.name}">
-                            <button type="button" class="delete-btn" onclick="removeChapter(this)">
-                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="3 6 5 6 21 6"/>
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                                </svg>
-                            </button>
-                        </div>
-                    `;
-                });
-            } else {
-                chaptersHtml = `
-                    <div class="chapter-item">
-                        <input type="text" placeholder="章节编号" class="chapter-code" style="width: 80px;">
-                        <input type="text" placeholder="章节名称" class="chapter-name">
-                        <button type="button" class="delete-btn" onclick="removeChapter(this)">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="3 6 5 6 21 6"/>
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                            </svg>
-                        </button>
-                    </div>
-                `;
-            }
-            document.getElementById('chaptersContainer').innerHTML = chaptersHtml;
-
-            document.getElementById('courseModal').classList.add('active');
-        }
-
-        function closeModal() {
-            document.getElementById('courseModal').classList.remove('active');
-        }
-
-        function addChapter() {
-            const container = document.getElementById('chaptersContainer');
-            const div = document.createElement('div');
-            div.className = 'chapter-item';
-            div.innerHTML = `
-                <input type="text" placeholder="章节编号" class="chapter-code" style="width: 80px;">
-                <input type="text" placeholder="章节名称" class="chapter-name">
-                <button type="button" class="delete-btn" onclick="removeChapter(this)">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="3 6 5 6 21 6"/>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                    </svg>
-                </button>
-            `;
-            container.appendChild(div);
-        }
-
-        function removeChapter(btn) {
-            const container = document.getElementById('chaptersContainer');
-            if (container.children.length <= 1) {
-                LMS.showToast('至少保留一个章节', 'error');
-                return;
-            }
-            btn.parentElement.remove();
-        }
-
-        document.getElementById('courseForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            // 收集章节
-            const chapterItems = document.querySelectorAll('.chapter-item');
-            const chapters = [];
-            let isValid = true;
-
-            chapterItems.forEach((item, index) => {
-                const code = item.querySelector('.chapter-code').value.trim();
-                const name = item.querySelector('.chapter-name').value.trim();
-                if (!code || !name) {
-                    isValid = false;
-                    return;
-                }
-                chapters.push({
-                    id: `ch${index+1}`,
-                    code,
-                    name,
-                    type: 'chapter'
-                });
-            });
-
-            if (!isValid) {
-                LMS.showToast('请填写完整的章节信息', 'error');
-                return;
-            }
-
-            const data = {
-                code: document.getElementById('formCode').value.trim(),
-                name: document.getElementById('formName').value.trim(),
-                category: document.getElementById('formCategory').value,
-                aircraft: document.getElementById('formAircraft').value.trim(),
-                description: document.getElementById('formDescription').value.trim(),
-                chapters
-            };
-
-            if (editingCourseId) {
-                LMS.updateCourse(editingCourseId, data);
-                LMS.showToast('课程已更新', 'success');
-            } else {
-                LMS.addCourse(data);
-                LMS.showToast('课程已创建', 'success');
-            }
-
-            closeModal();
-            loadCourses();
+  <script src="../shared/app.js"></script>
+  <script>
+    let chapterCount = 0;
+    let uploadedFiles = [];
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      LMS.initializeMockData();
+      const user = LMS.Auth.init();
+      if (!user || user.role !== 'admin') { window.location.href = 'login.html'; return; }
+      loadATA();
+      
+      // 绑定搜索事件
+      document.getElementById('searchInput').addEventListener('input', debounce(loadATA, 300));
+      document.getElementById('ataRange').addEventListener('change', loadATA);
+      
+      // 拖拽上传
+      const uploadZone = document.getElementById('uploadZone');
+      uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+      uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+      uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('dragover'); handleFileDrop(e); });
+    });
+    
+    function loadATA() {
+      const container = document.getElementById('ataList');
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const range = document.getElementById('ataRange').value;
+      
+      let systems = LMS.ATAManager.getAll();
+      
+      // 筛选
+      if (search) {
+        systems = systems.filter(s => 
+          s.name.toLowerCase().includes(search) || 
+          s.ataCode.includes(search)
+        );
+      }
+      
+      if (range) {
+        const [start, end] = range.split('-').map(Number);
+        systems = systems.filter(s => {
+          const code = parseInt(s.ataCode);
+          return code >= start && code <= end;
         });
-
-        function deleteCourse(id, name) {
-            if (confirm(`确定要删除课程 "${name}" 吗？此操作将同时删除该课程的所有课件、分配和学习记录。`)) {
-                LMS.deleteCourse(id);
-                LMS.showToast('课程已删除', 'success');
-                loadCourses();
-            }
+      }
+      
+      // 按ATA代码排序
+      systems.sort((a, b) => parseInt(a.ataCode) - parseInt(b.ataCode));
+      
+      if (systems.length === 0) {
+        container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:#999;">暂无ATA系统数据</div>';
+        return;
+      }
+      
+      container.innerHTML = systems.map(s => `
+        <div class="ata-card">
+          <div class="ata-header">
+            <div class="ata-code">${s.ataCode}</div>
+            <div class="ata-info">
+              <h3>${s.name}</h3>
+              <span>${s.chapters?.length || 0} 章节</span>
+            </div>
+          </div>
+          <div class="ata-body">
+            <div class="ata-stats">
+              <span>📚 ${s.chapters?.length || 0} 章节</span>
+              <span>⏱️ ${s.duration || 0} 分钟</span>
+              <span>👥 ${getStudentCount(s.id)} 人学习</span>
+            </div>
+          </div>
+          <div class="ata-actions">
+            <button class="btn btn-primary btn-sm" onclick="window.location.href='courseware.html?ataId=${s.id}'" style="flex:1;">管理课件</button>
+            <button class="btn btn-secondary btn-sm" onclick="editATA('${s.id}')">编辑</button>
+            <button class="btn btn-secondary btn-sm" onclick="deleteATA('${s.id}')">删除</button>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function getStudentCount(ataId) {
+      const records = LMS.LearningTracker.getAllRecords({ courseId: ataId });
+      return new Set(records.map(r => r.userId)).size;
+    }
+    
+    function openAddModal() {
+      document.getElementById('modalTitle').textContent = '添加ATA系统';
+      document.getElementById('ataForm').reset();
+      document.getElementById('ataId').value = '';
+      document.getElementById('chapterList').innerHTML = '';
+      chapterCount = 0;
+      addChapterItem(); // 添加一个默认章节
+      document.getElementById('ataModal').classList.add('active');
+    }
+    
+    function editATA(id) {
+      const ata = LMS.ATAManager.getById(id);
+      if (!ata) return;
+      
+      document.getElementById('modalTitle').textContent = '编辑ATA系统';
+      document.getElementById('ataId').value = ata.id;
+      document.getElementById('ataCode').value = ata.ataCode;
+      document.getElementById('ataName').value = ata.name;
+      document.getElementById('chapterList').innerHTML = '';
+      chapterCount = 0;
+      
+      if (ata.chapters && ata.chapters.length > 0) {
+        ata.chapters.forEach(ch => addChapterItem(ch.title, ch.duration));
+      } else {
+        addChapterItem();
+      }
+      
+      document.getElementById('ataModal').classList.add('active');
+    }
+    
+    function addChapterItem(title = '', duration = 30) {
+      chapterCount++;
+      const container = document.getElementById('chapterList');
+      const div = document.createElement('div');
+      div.className = 'chapter-item';
+      div.innerHTML = `
+        <span style="color:#666;font-size:13px;min-width:20px;">${chapterCount}.</span>
+        <input type="text" class="title-input" placeholder="章节名称" value="${title}">
+        <input type="number" class="duration duration-input" placeholder="时长(分钟)" value="${duration}" min="1">
+        <button type="button" onclick="this.parentElement.remove()">×</button>
+      `;
+      container.appendChild(div);
+    }
+    
+    function saveATA() {
+      const id = document.getElementById('ataId').value;
+      const ataCode = document.getElementById('ataCode').value.trim();
+      const ataName = document.getElementById('ataName').value.trim();
+      
+      if (!ataCode || !ataName) {
+        alert('请填写ATA代码和系统名称');
+        return;
+      }
+      
+      // 收集章节
+      const chapters = [];
+      document.querySelectorAll('.chapter-item').forEach(item => {
+        const title = item.querySelector('.title-input').value.trim();
+        const duration = parseInt(item.querySelector('.duration-input').value) || 30;
+        if (title) {
+          chapters.push({
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+            title,
+            duration
+          });
         }
-
-        document.getElementById('courseModal').addEventListener('click', (e) => {
-            if (e.target.id === 'courseModal') {
-                closeModal();
-            }
+      });
+      
+      const data = {
+        ataCode: ataCode.padStart(2, '0'),
+        name: ataName,
+        chapters,
+        duration: chapters.reduce((sum, c) => sum + c.duration, 0)
+      };
+      
+      if (id) {
+        LMS.ATAManager.update(id, data);
+        alert('系统已更新');
+      } else {
+        LMS.ATAManager.create(data);
+        alert('系统已添加');
+      }
+      
+      closeModal();
+      loadATA();
+    }
+    
+    function deleteATA(id) {
+      if (!confirm('确定要删除这个ATA系统吗？')) return;
+      LMS.ATAManager.delete(id);
+      loadATA();
+    }
+    
+    function closeModal() {
+      document.getElementById('ataModal').classList.remove('active');
+    }
+    
+    // 批量上传
+    function openUploadModal() {
+      uploadedFiles = [];
+      document.getElementById('fileList').innerHTML = '';
+      document.getElementById('uploadModal').classList.add('active');
+    }
+    
+    function closeUploadModal() {
+      document.getElementById('uploadModal').classList.remove('active');
+    }
+    
+    function handleFileSelect(event) {
+      const files = Array.from(event.target.files);
+      processFiles(files);
+    }
+    
+    function handleFileDrop(event) {
+      const files = Array.from(event.dataTransfer.files);
+      processFiles(files);
+    }
+    
+    function processFiles(files) {
+      files.forEach(file => {
+        if (!uploadedFiles.find(f => f.name === file.name)) {
+          uploadedFiles.push(file);
+        }
+      });
+      renderFileList();
+    }
+    
+    function renderFileList() {
+      const container = document.getElementById('fileList');
+      container.innerHTML = uploadedFiles.map((file, index) => `
+        <div class="file-item">
+          <span>📄 ${file.name}</span>
+          <button onclick="removeFile(${index})">×</button>
+        </div>
+      `).join('');
+    }
+    
+    function removeFile(index) {
+      uploadedFiles.splice(index, 1);
+      renderFileList();
+    }
+    
+    function batchImport() {
+      if (uploadedFiles.length === 0) {
+        alert('请先上传文件');
+        return;
+      }
+      
+      // 从文件名创建系统
+      uploadedFiles.forEach(file => {
+        const name = file.name.replace(/\.[^/.]+$/, ''); // 去除扩展名
+        // 尝试提取ATA代码
+        const match = name.match(/ATA\s*(\d{2})/i) || name.match(/^(\d{2})[\s\-]/);
+        const ataCode = match ? match[1] : '';
+        
+        LMS.ATAManager.create({
+          name: name,
+          ataCode: ataCode,
+          fileName: file.name,
+          chapters: [{ id: Date.now().toString(), title: name, duration: 30 }]
         });
-    </script>
+      });
+      
+      alert(`成功导入 ${uploadedFiles.length} 个ATA系统`);
+      closeUploadModal();
+      loadATA();
+    }
+    
+    function debounce(func, wait) {
+      let timeout;
+      return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+      };
+    }
+  </script>
 </body>
 </html>

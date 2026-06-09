@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>课程分配 - 航空培训在线学习平台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/styles.css">
+</head>
+<body>
+  <div class="page-container">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <svg width="36" height="36" viewBox="0 0 80 80" fill="none"><rect width="80" height="80" rx="16" fill="rgba(255,255,255,0.2)"/><path d="M40 15L55 35H25L40 15Z" fill="white" opacity="0.9"/><path d="M40 35V55M35 50H45" stroke="white" stroke-width="3" stroke-linecap="round"/></svg>
+        <span>管理后台</span>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-section"><div class="sidebar-title">概览</div>
+          <a href="dashboard.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>仪表盘</span></a>
+        </div>
+        <div class="sidebar-section"><div class="sidebar-title">学员管理</div>
+          <a href="students.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span>学员管理</span></a>
+          <a href="assignments.html" class="sidebar-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg><span>课程分配</span></a>
+        </div>
+        <div class="sidebar-section"><div class="sidebar-title">课程管理</div>
+          <a href="courses.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>课程管理</span></a>
+          <a href="courseware.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg><span>课件管理</span></a>
+        </div>
+        <div class="sidebar-section"><div class="sidebar-title">数据统计</div>
+          <a href="records.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>学习记录</span></a>
+          <a href="reports.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>统计报表</span></a>
+        </div>
+      </nav>
+    </aside>
+    
+    <div style="flex:1;margin-left:260px;">
+      <header class="main-header">
+        <div class="breadcrumb"><a href="dashboard.html">首页</a><span>/</span><span>课程分配</span></div>
+        <button class="btn btn-primary" onclick="openAssignModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          新建分配
+        </button>
+      </header>
+      
+      <div style="padding:24px;">
+        <div class="card" style="margin-bottom:24px;">
+          <div class="filter-bar">
+            <select id="filterStudent">
+              <option value="">全部学员</option>
+            </select>
+            <select id="filterCourse">
+              <option value="">全部课程</option>
+            </select>
+            <select id="filterStatus">
+              <option value="">全部状态</option>
+              <option value="assigned">已分配</option>
+              <option value="completed">已完成</option>
+            </select>
+            <button class="btn btn-secondary" onclick="loadAssignments()">筛选</button>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">分配记录</h3>
+            <span id="totalCount" style="color:var(--text-secondary);font-size:13px;">共 0 条</span>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>学员</th>
+                  <th>课程</th>
+                  <th>分配时间</th>
+                  <th>截止日期</th>
+                  <th>完成状态</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="assignmentsTable">
+                <tr><td colspan="6" style="text-align:center;padding:32px;"><div class="loading"><div class="spinner"></div></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Assign Modal -->
+  <div class="modal-overlay" id="assignModal">
+    <div class="modal" style="max-width:600px;">
+      <div class="modal-header">
+        <h3 class="modal-title">新建课程分配</h3>
+        <button class="modal-close" onclick="closeModal('assignModal')">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="assignForm">
+          <div class="form-group">
+            <label>选择学员 *</label>
+            <select id="assignStudent" required>
+              <option value="">选择学员</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>选择课程 *</label>
+            <select id="assignCourse" required>
+              <option value="">选择课程</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>截止日期</label>
+            <input type="date" id="assignDueDate">
+          </div>
+          <div style="background:var(--bg-primary);padding:16px;border-radius:8px;margin-top:16px;">
+            <p style="font-size:13px;color:var(--text-secondary);">💡 提示：分配后学员可以在学习中心看到这门课程，并开始学习。</p>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('assignModal')">取消</button>
+        <button class="btn btn-primary" onclick="saveAssignment()">确认分配</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../shared/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      LMS.initializeMockData();
+      const user = LMS.Auth.init();
+      if (!user || user.role !== 'admin') { window.location.href = 'login.html'; return; }
+      
+      loadFilters();
+      loadAssignments();
+    });
+    
+    function loadFilters() {
+      const students = LMS.StudentManager.getAll();
+      const courses = LMS.CourseManager.getAll().filter(c => c.status === 'published');
+      
+      document.getElementById('filterStudent').innerHTML = '<option value="">全部学员</option>' + 
+        students.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+      document.getElementById('filterCourse').innerHTML = '<option value="">全部课程</option>' + 
+        courses.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      
+      document.getElementById('assignStudent').innerHTML = '<option value="">选择学员</option>' + 
+        students.map(s => `<option value="${s.id}">${s.name} (${s.email})</option>`).join('');
+      document.getElementById('assignCourse').innerHTML = '<option value="">选择课程</option>' + 
+        courses.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    }
+    
+    function loadAssignments() {
+      const tbody = document.getElementById('assignmentsTable');
+      const studentFilter = document.getElementById('filterStudent').value;
+      const courseFilter = document.getElementById('filterCourse').value;
+      
+      let assignments = LMS.AssignmentManager.getAll();
+      const students = LMS.StudentManager.getAll();
+      const courses = LMS.CourseManager.getAll();
+      const records = LMS.LearningTracker.getAllRecords();
+      
+      if (studentFilter) assignments = assignments.filter(a => a.userId === studentFilter);
+      if (courseFilter) assignments = assignments.filter(a => a.courseId === courseFilter);
+      
+      document.getElementById('totalCount').textContent = `共 ${assignments.length} 条`;
+      
+      if (assignments.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-secondary);padding:32px;">暂无分配记录</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = assignments.map(a => {
+        const student = students.find(s => s.id === a.userId);
+        const course = courses.find(c => c.id === a.courseId);
+        const courseRecords = records.filter(r => r.userId === a.userId && r.courseId === a.courseId);
+        const isCompleted = courseRecords.some(r => r.status === 'completed');
+        const statusClass = isCompleted ? 'badge-success' : 'badge-warning';
+        const statusText = isCompleted ? '已完成' : '进行中';
+        const dueDate = a.dueDate ? LMS.UI.formatDate(a.dueDate, 'date') : '无限制';
+        
+        return `
+          <tr>
+            <td><strong>${student?.name || '未知'}</strong></td>
+            <td>${course?.name || '未知课程'}</td>
+            <td>${LMS.UI.formatDate(a.assignedAt, 'date')}</td>
+            <td>${dueDate}</td>
+            <td><span class="badge ${statusClass}">${statusText}</span></td>
+            <td>
+              <button class="action-btn delete" onclick="deleteAssignment('${a.id}')">删除</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+    
+    function openAssignModal() {
+      document.getElementById('assignForm').reset();
+      LMS.UI.openModal('assignModal');
+    }
+    
+    function saveAssignment() {
+      const userId = document.getElementById('assignStudent').value;
+      const courseId = document.getElementById('assignCourse').value;
+      const dueDate = document.getElementById('assignDueDate').value;
+      
+      if (!userId || !courseId) {
+        LMS.UI.toast('请选择学员和课程', 'error');
+        return;
+      }
+      
+      // 检查是否已分配
+      const existing = LMS.AssignmentManager.getAll().find(a => 
+        a.userId === userId && a.courseId === courseId
+      );
+      
+      if (existing) {
+        LMS.UI.toast('该学员已分配此课程', 'warning');
+        return;
+      }
+      
+      LMS.AssignmentManager.create({
+        userId,
+        courseId,
+        dueDate: dueDate || null
+      });
+      
+      closeModal('assignModal');
+      loadAssignments();
+      LMS.UI.toast('分配成功', 'success');
+    }
+    
+    function deleteAssignment(id) {
+      if (confirm('确定要删除这条分配记录吗？')) {
+        LMS.AssignmentManager.delete(id);
+        loadAssignments();
+        LMS.UI.toast('已删除', 'success');
+      }
+    }
+    
+    function closeModal(id) { LMS.UI.closeModal(id); }
+  </script>
+</body>
+</html>

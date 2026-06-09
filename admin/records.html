@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>学习记录 - 航空培训在线学习平台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/styles.css">
+</head>
+<body>
+  <div class="page-container">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <svg width="36" height="36" viewBox="0 0 80 80" fill="none"><rect width="80" height="80" rx="16" fill="rgba(255,255,255,0.2)"/><path d="M40 15L55 35H25L40 15Z" fill="white" opacity="0.9"/><path d="M40 35V55M35 50H45" stroke="white" stroke-width="3" stroke-linecap="round"/></svg>
+        <span>管理后台</span>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-section"><div class="sidebar-title">概览</div>
+          <a href="dashboard.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>仪表盘</span></a>
+        </div>
+        <div class="sidebar-section"><div class="sidebar-title">学员管理</div>
+          <a href="students.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span>学员管理</span></a>
+          <a href="assignments.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg><span>课程分配</span></a>
+        </div>
+        <div class="sidebar-section"><div class="sidebar-title">课程管理</div>
+          <a href="courses.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>课程管理</span></a>
+          <a href="courseware.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg><span>课件管理</span></a>
+        </div>
+        <div class="sidebar-section"><div class="sidebar-title">数据统计</div>
+          <a href="records.html" class="sidebar-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>学习记录</span></a>
+          <a href="reports.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>统计报表</span></a>
+        </div>
+      </nav>
+    </aside>
+    
+    <div style="flex:1;margin-left:260px;">
+      <header class="main-header">
+        <div class="breadcrumb"><a href="dashboard.html">首页</a><span>/</span><span>学习记录</span></div>
+        <div style="display:flex;gap:12px;">
+          <button class="btn btn-secondary" onclick="exportRecords()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            导出数据
+          </button>
+        </div>
+      </header>
+      
+      <div style="padding:24px;">
+        <div class="card" style="margin-bottom:24px;">
+          <div class="filter-bar">
+            <select id="filterStudent">
+              <option value="">全部学员</option>
+            </select>
+            <select id="filterCourse">
+              <option value="">全部课程</option>
+            </select>
+            <input type="date" id="filterStartDate" placeholder="开始日期">
+            <input type="date" id="filterEndDate" placeholder="结束日期">
+            <button class="btn btn-secondary" onclick="loadRecords()">筛选</button>
+            <button class="btn btn-secondary" onclick="clearFilters()">清除</button>
+          </div>
+        </div>
+        
+        <div class="stats-grid" style="margin-bottom:24px;">
+          <div class="stat-card">
+            <div class="stat-icon blue"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+            <div class="stat-content">
+              <div class="stat-value" id="statTotal">0</div>
+              <div class="stat-label">总记录数</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+            <div class="stat-content">
+              <div class="stat-value" id="statCompleted">0</div>
+              <div class="stat-label">已完成</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            <div class="stat-content">
+              <div class="stat-value" id="statHours">0h</div>
+              <div class="stat-label">累计学习</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+            <div class="stat-content">
+              <div class="stat-value" id="statAvgProgress">0%</div>
+              <div class="stat-label">平均进度</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">详细记录</h3>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>学员</th>
+                  <th>课程</th>
+                  <th>开始时间</th>
+                  <th>学习时长</th>
+                  <th>进度</th>
+                  <th>成绩</th>
+                  <th>状态</th>
+                </tr>
+              </thead>
+              <tbody id="recordsTable">
+                <tr><td colspan="7" style="text-align:center;padding:32px;"><div class="loading"><div class="spinner"></div></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination" id="pagination"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../shared/app.js"></script>
+  <script>
+    let currentPage = 1;
+    const perPage = 15;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      LMS.initializeMockData();
+      const user = LMS.Auth.init();
+      if (!user || user.role !== 'admin') { window.location.href = 'login.html'; return; }
+      
+      loadFilters();
+      loadRecords();
+    });
+    
+    function loadFilters() {
+      const students = LMS.StudentManager.getAll();
+      const courses = LMS.CourseManager.getAll();
+      
+      document.getElementById('filterStudent').innerHTML = '<option value="">全部学员</option>' + 
+        students.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+      document.getElementById('filterCourse').innerHTML = '<option value="">全部课程</option>' + 
+        courses.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    }
+    
+    function loadRecords() {
+      const tbody = document.getElementById('recordsTable');
+      const filters = {
+        userId: document.getElementById('filterStudent').value || undefined,
+        courseId: document.getElementById('filterCourse').value || undefined,
+        startDate: document.getElementById('filterStartDate').value || undefined,
+        endDate: document.getElementById('filterEndDate').value || undefined
+      };
+      
+      let records = LMS.LearningTracker.getAllRecords(filters);
+      records.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+      
+      // 更新统计
+      document.getElementById('statTotal').textContent = records.length;
+      document.getElementById('statCompleted').textContent = records.filter(r => r.status === 'completed').length;
+      const totalDuration = records.reduce((sum, r) => sum + (r.duration || 0), 0);
+      document.getElementById('statHours').textContent = Math.round(totalDuration / 3600 * 10) / 10 + 'h';
+      const avgProgress = records.length > 0 
+        ? Math.round(records.reduce((sum, r) => sum + (r.progress || 0), 0) / records.length) 
+        : 0;
+      document.getElementById('statAvgProgress').textContent = avgProgress + '%';
+      
+      // 分页
+      const total = records.length;
+      const totalPages = Math.ceil(total / perPage);
+      const start = (currentPage - 1) * perPage;
+      const paginatedRecords = records.slice(start, start + perPage);
+      
+      const students = LMS.Storage.get('users') || [];
+      const courses = LMS.CourseManager.getAll();
+      
+      if (paginatedRecords.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-secondary);padding:32px;">暂无记录</td></tr>';
+        document.getElementById('pagination').innerHTML = '';
+        return;
+      }
+      
+      tbody.innerHTML = paginatedRecords.map(r => {
+        const student = students.find(s => s.id === r.userId);
+        const course = courses.find(c => c.id === r.courseId);
+        const statusClass = r.status === 'completed' ? 'badge-success' : 'badge-warning';
+        const statusText = r.status === 'completed' ? '已完成' : '进行中';
+        
+        return `
+          <tr>
+            <td><strong>${student?.name || '未知'}</strong></td>
+            <td>${course?.name || '未知课程'}</td>
+            <td>${LMS.UI.formatDate(r.startTime)}</td>
+            <td>${LMS.DataExporter.formatDuration(r.duration)}</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div class="progress" style="width:60px;height:6px;">
+                  <div class="progress-bar" style="width:${r.progress}%"></div>
+                </div>
+                <span style="font-size:12px;">${r.progress}%</span>
+              </div>
+            </td>
+            <td>${r.score ? r.score + '分' : '-'}</td>
+            <td><span class="badge ${statusClass}">${statusText}</span></td>
+          </tr>
+        `;
+      }).join('');
+      
+      renderPagination(totalPages);
+    }
+    
+    function renderPagination(totalPages) {
+      const container = document.getElementById('pagination');
+      if (totalPages <= 1) { container.innerHTML = ''; return; }
+      
+      let html = `<button ${currentPage === 1 ? 'disabled' : ''} onclick="goToPage(${currentPage - 1})">上一页</button>`;
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+          html += `<button class="${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+        }
+      }
+      html += `<button ${currentPage === totalPages ? 'disabled' : ''} onclick="goToPage(${currentPage + 1})">下一页</button>`;
+      container.innerHTML = html;
+    }
+    
+    function goToPage(page) {
+      currentPage = page;
+      loadRecords();
+    }
+    
+    function clearFilters() {
+      document.getElementById('filterStudent').value = '';
+      document.getElementById('filterCourse').value = '';
+      document.getElementById('filterStartDate').value = '';
+      document.getElementById('filterEndDate').value = '';
+      currentPage = 1;
+      loadRecords();
+    }
+    
+    function exportRecords() {
+      const filters = {
+        userId: document.getElementById('filterStudent').value || undefined,
+        courseId: document.getElementById('filterCourse').value || undefined,
+        startDate: document.getElementById('filterStartDate').value || undefined,
+        endDate: document.getElementById('filterEndDate').value || undefined
+      };
+      
+      const csv = LMS.DataExporter.exportLearningRecords(filters);
+      const filename = `学习记录_${LMS.UI.formatDate(new Date(), 'date')}.csv`;
+      LMS.DataExporter.download(csv, filename);
+      LMS.UI.toast('导出成功', 'success');
+    }
+  </script>
+</body>
+</html>
