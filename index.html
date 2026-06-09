@@ -3,255 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>航空CBT培训平台 - 登录</title>
-    <link rel="stylesheet" href="shared/styles.css">
+    <title>C919系统CBT培训平台</title>
     <style>
-        .login-container {
-            background: linear-gradient(135deg, #1a3a5c 0%, #2d4a6f 50%, #1a3a5c 100%);
-        }
-        
-        .login-box {
-            max-width: 400px;
-        }
-        
-        .login-logo {
-            margin-bottom: 40px;
-        }
-        
-        .login-logo .logo-icon {
-            width: 72px;
-            height: 72px;
-            background: var(--primary-dark);
-            border-radius: 16px;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            background: linear-gradient(135deg, #0d47a1 0%, #1565c0 50%, #1976d2 100%);
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 20px;
         }
-        
-        .login-logo .logo-icon svg {
-            width: 40px;
-            height: 40px;
-            color: white;
-        }
-        
-        .login-logo h1 {
-            font-size: 24px;
-        }
-        
-        .login-logo .subtitle {
-            color: var(--text-gray);
-            font-size: 14px;
-            margin-top: 8px;
-        }
-        
-        .role-selector {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 24px;
-        }
-        
-        .role-btn {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid var(--border-color);
-            background: var(--bg-white);
-            border-radius: 8px;
+        .container { text-align: center; padding: 40px; max-width: 900px; }
+        .logo { font-size: 80px; margin-bottom: 20px; }
+        h1 { color: #fff; font-size: 48px; margin-bottom: 8px; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        .subtitle { color: rgba(255,255,255,0.8); font-size: 20px; margin-bottom: 60px; }
+        .cards { display: flex; gap: 40px; justify-content: center; flex-wrap: wrap; }
+        .card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 50px 60px;
             cursor: pointer;
-            text-align: center;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            min-width: 300px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
         }
+        .card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 30px 80px rgba(0,0,0,0.3); }
+        .card-icon { font-size: 72px; margin-bottom: 20px; }
+        .card-title { color: #1565c0; font-size: 28px; font-weight: bold; margin-bottom: 12px; }
+        .card-desc { color: #666; font-size: 15px; line-height: 1.6; }
+        .footer { margin-top: 60px; color: rgba(255,255,255,0.6); font-size: 14px; }
         
-        .role-btn:hover {
-            border-color: var(--primary-blue);
-        }
-        
-        .role-btn.active {
-            border-color: var(--primary-blue);
-            background: rgba(37, 99, 235, 0.05);
-        }
-        
-        .role-btn .role-icon {
-            width: 32px;
-            height: 32px;
-            margin: 0 auto 8px;
-            color: var(--text-gray);
-        }
-        
-        .role-btn.active .role-icon {
-            color: var(--primary-blue);
-        }
-        
-        .role-btn .role-name {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-dark);
-        }
-        
-        .demo-accounts {
-            margin-top: 24px;
-            padding: 16px;
-            background: var(--bg-light);
-            border-radius: 8px;
-        }
-        
-        .demo-accounts h4 {
-            font-size: 12px;
-            color: var(--text-gray);
-            margin-bottom: 12px;
-            text-transform: uppercase;
-        }
-        
-        .demo-account {
+        /* 底部信息 */
+        .info-bar {
             display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 13px;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 40px;
+            flex-wrap: wrap;
         }
-        
-        .demo-account:last-child {
-            border-bottom: none;
-        }
-        
-        .demo-account .role {
-            color: var(--primary-blue);
-            font-weight: 500;
-        }
-        
-        .demo-account .cred {
-            color: var(--text-gray);
-            font-family: monospace;
-        }
-        
-        .error-message {
-            color: var(--danger-red);
-            font-size: 13px;
-            margin-top: 8px;
-            display: none;
-        }
-        
-        .error-message.show {
-            display: block;
-        }
+        .info-item { color: rgba(255,255,255,0.8); font-size: 14px; }
+        .info-item span { font-weight: 600; color: #fff; }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-box">
-            <div class="login-logo">
-                <div class="logo-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                        <path d="M2 17l10 5 10-5"/>
-                        <path d="M2 12l10 5 10-5"/>
-                    </svg>
-                </div>
-                <h1>航空CBT培训平台</h1>
-                <p class="subtitle">飞机系统交互式培训课程管理系统</p>
-            </div>
+    <div class="container">
+        <div class="logo">✈️</div>
+        <h1>C919系统CBT培训平台</h1>
+        <p class="subtitle">Aviation Maintenance Training System</p>
+        
+        <div class="cards">
+            <a href="student/index.html" class="card">
+                <div class="card-icon">👨‍🎓</div>
+                <div class="card-title">学员学习中心</div>
+                <div class="card-desc">进入C919各系统培训课程<br>学习ATA21-ATA80全章节</div>
+            </a>
             
-            <form id="loginForm">
-                <div class="role-selector">
-                    <div class="role-btn active" data-role="student">
-                        <svg class="role-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                            <circle cx="12" cy="7" r="4"/>
-                        </svg>
-                        <div class="role-name">学员</div>
-                    </div>
-                    <div class="role-btn" data-role="admin">
-                        <svg class="role-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                        <div class="role-name">管理员</div>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label>用户名</label>
-                    <input type="text" id="username" placeholder="请输入用户名" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>密码</label>
-                    <input type="password" id="password" placeholder="请输入密码" required>
-                    <div class="error-message" id="errorMsg">用户名或密码错误</div>
-                </div>
-                
-                <button type="submit" class="btn btn-primary btn-block" id="loginBtn">
-                    登录
-                </button>
-            </form>
-            
-            <div class="demo-accounts">
-                <h4>演示账号</h4>
-                <div class="demo-account">
-                    <span class="role">学员</span>
-                    <span class="cred">zhangwei / 123456</span>
-                </div>
-                <div class="demo-account">
-                    <span class="role">管理员</span>
-                    <span class="cred">admin / admin123</span>
-                </div>
-                <div class="demo-account">
-                    <span class="role">超级管理员</span>
-                    <span class="cred">super / super123</span>
-                </div>
-            </div>
+            <a href="admin/login.html" class="card">
+                <div class="card-icon">🔧</div>
+                <div class="card-title">管理后台</div>
+                <div class="card-desc">系统管理、课件上传<br>学员学习进度监控</div>
+            </a>
+        </div>
+        
+        <div class="info-bar">
+            <div class="info-item">📚 <span>28</span> 个ATA系统模块</div>
+            <div class="info-item">✈️ <span>C919</span> 大型客机</div>
+            <div class="info-item">🔧 <span>CFM LEAP-1C</span> 发动机</div>
+        </div>
+        
+        <div class="footer">
+            演示账号：zhangwei / 123456 | admin / admin123
         </div>
     </div>
-
-    <script src="shared/app.js"></script>
-    <script>
-        // 角色选择
-        document.querySelectorAll('.role-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            });
-        });
-
-        // 登录表单提交
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
-            const errorMsg = document.getElementById('errorMsg');
-            const loginBtn = document.getElementById('loginBtn');
-            
-            loginBtn.disabled = true;
-            loginBtn.textContent = '登录中...';
-            errorMsg.classList.remove('show');
-            
-            // 模拟网络延迟
-            setTimeout(() => {
-                const result = LMS.login(username, password);
-                
-                if (result.success) {
-                    // 根据角色跳转
-                    let redirectPage;
-                    switch (result.user.role) {
-                        case 'admin':
-                        case 'super_admin':
-                            redirectPage = 'admin/dashboard.html';
-                            break;
-                        case 'student':
-                            redirectPage = 'student/index.html';
-                            break;
-                        default:
-                            redirectPage = 'index.html';
-                    }
-                    window.location.href = redirectPage;
-                } else {
-                    errorMsg.textContent = result.message;
-                    errorMsg.classList.add('show');
-                    loginBtn.disabled = false;
-                    loginBtn.textContent = '登录';
-                }
-            }, 500);
-        });
-    </script>
 </body>
 </html>

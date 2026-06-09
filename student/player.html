@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>课件学习 - 航空培训在线学习平台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/styles.css">
+  <style>
+    body { background: #000; overflow: hidden; }
+    .player-page { background: #1a1a2e; }
+    .player-header { background: linear-gradient(90deg, var(--primary-dark), var(--primary-color)); }
+    .chapter-item { position: relative; }
+    .chapter-item .check-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--success-color); }
+    .note-item { padding: 12px; background: var(--bg-primary); border-radius: 8px; margin-bottom: 12px; }
+    .note-time { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
+    .note-content { font-size: 13px; }
+    .fullscreen-btn { padding: 8px; border-radius: 4px; transition: var(--transition); }
+    .fullscreen-btn:hover { background: rgba(255,255,255,0.1); }
+  </style>
+</head>
+<body>
+  <div class="player-page">
+    <!-- Header -->
+    <header class="player-header">
+      <a href="index.html" class="back-btn" title="返回学习中心">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </a>
+      
+      <div class="player-course-info">
+        <div class="player-course-title" id="courseName">加载中...</div>
+        <div class="player-chapter" id="chapterName">请选择章节开始学习</div>
+      </div>
+      
+      <div class="player-timer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <span id="timerDisplay">00:00</span>
+      </div>
+      
+      <button class="fullscreen-btn" onclick="toggleFullscreen()" title="全屏模式" style="background:none;border:none;color:white;cursor:pointer;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+        </svg>
+      </button>
+    </header>
+    
+    <!-- Main Player Area -->
+    <div class="player-main">
+      <!-- Content Area -->
+      <div class="player-content">
+        <div id="coursewareContainer" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#0d0d1a;">
+          <!-- 等待选择章节 -->
+          <div id="placeholderContent" style="text-align:center;color:#666;">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="margin-bottom:16px;">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            <p style="font-size:18px;">请从右侧目录选择章节开始学习</p>
+          </div>
+          
+          <!-- iframe将在这里加载 -->
+          <iframe 
+            id="coursewareIframe" 
+            class="player-iframe" 
+            style="display:none;"
+            allow="fullscreen"
+          ></iframe>
+        </div>
+      </div>
+      
+      <!-- Sidebar -->
+      <div class="player-sidebar">
+        <div class="player-tabs">
+          <div class="player-tab active" data-tab="chapters">章节</div>
+          <div class="player-tab" data-tab="notes">笔记</div>
+          <div class="player-tab" data-tab="info">信息</div>
+        </div>
+        
+        <div class="player-tab-content" id="tabContent">
+          <!-- Chapters Tab -->
+          <div class="tab-panel active" id="chaptersPanel">
+            <div class="chapter-list" id="chapterList">
+              <!-- 动态加载章节 -->
+            </div>
+          </div>
+          
+          <!-- Notes Tab -->
+          <div class="tab-panel" id="notesPanel" style="display:none;">
+            <div style="margin-bottom:16px;">
+              <textarea id="noteInput" placeholder="在此输入笔记内容..." style="width:100%;min-height:80px;padding:12px;border:1px solid var(--border-color);border-radius:8px;resize:vertical;font-size:13px;"></textarea>
+              <button class="btn btn-primary btn-sm" style="margin-top:8px;" onclick="addNote()">保存笔记</button>
+            </div>
+            <div id="notesList">
+              <!-- 动态加载笔记 -->
+            </div>
+          </div>
+          
+          <!-- Info Tab -->
+          <div class="tab-panel" id="infoPanel" style="display:none;">
+            <div style="padding:16px 0;">
+              <h4 style="margin-bottom:12px;">课程信息</h4>
+              <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+                <p><strong>课程名称：</strong><span id="infoCourseName">-</span></p>
+                <p><strong>所属分类：</strong><span id="infoCategory">-</span></p>
+                <p><strong>授课教员：</strong><span id="infoInstructor">-</span></p>
+                <p><strong>总课时数：</strong><span id="infoHours">-</span></p>
+              </div>
+              
+              <h4 style="margin:20px 0 12px;">学习进度</h4>
+              <div style="margin-bottom:12px;">
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;">
+                  <span>完成度</span>
+                  <span id="infoProgress">0%</span>
+                </div>
+                <div class="progress" style="height:10px;">
+                  <div class="progress-bar" id="infoProgressBar" style="width:0%"></div>
+                </div>
+              </div>
+              
+              <h4 style="margin:20px 0 12px;">课件说明</h4>
+              <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">
+                本课件基于Articulate Storyline开发，支持交互式学习。请按照章节顺序完成学习，学习过程中系统会自动记录您的学习时长和进度。
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Bottom Bar -->
+    <div style="height:48px;background:var(--bg-dark);display:flex;align-items:center;justify-content:center;gap:24px;padding:0 24px;">
+      <button class="btn" style="background:rgba(255,255,255,0.1);color:white;border:none;padding:8px 16px;" onclick="prevChapter()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        上一章
+      </button>
+      <span id="chapterIndicator" style="color:rgba(255,255,255,0.7);font-size:13px;">第 1 / 5 章</span>
+      <button class="btn" style="background:rgba(255,255,255,0.1);color:white;border:none;padding:8px 16px;" onclick="nextChapter()">
+        下一章
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:4px;">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <script src="../shared/app.js"></script>
+  <script>
+    // 全局变量
+    let currentCourse = null;
+    let currentCourseware = null;
+    let currentChapterIndex = 0;
+    let learningRecord = null;
+    let timerSeconds = 0;
+    let timerInterval = null;
+    let completedChapters = new Set();
+    
+    // 页面初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      LMS.initializeMockData();
+      const user = LMS.Auth.init();
+      
+      if (!user || user.role !== 'student') {
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      // 获取课程ID
+      const urlParams = new URLSearchParams(window.location.search);
+      const courseId = urlParams.get('courseId');
+      const coursewareId = urlParams.get('coursewareId');
+      
+      if (!courseId) {
+        alert('课程参数错误');
+        window.location.href = 'index.html';
+        return;
+      }
+      
+      // 加载课程信息
+      loadCourse(courseId, coursewareId);
+      
+      // 绑定标签切换
+      document.querySelectorAll('.player-tab').forEach(tab => {
+        tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+      });
+      
+      // 监听iframe消息（Storyline通信）
+      window.addEventListener('message', handleIframeMessage);
+      
+      // 页面卸载时保存记录
+      window.addEventListener('beforeunload', saveLearningProgress);
+    });
+    
+    // 加载课程
+    function loadCourse(courseId, coursewareId) {
+      currentCourse = LMS.CourseManager.getById(courseId);
+      const user = LMS.Auth.init();
+      
+      if (!currentCourse) {
+        alert('课程不存在');
+        window.location.href = 'index.html';
+        return;
+      }
+      
+      // 获取课件列表
+      const coursewares = LMS.CoursewareManager.getByCourse(courseId);
+      if (coursewares.length > 0) {
+        currentCourseware = coursewares[0];
+        if (coursewareId) {
+          const specified = coursewares.find(c => c.id === coursewareId);
+          if (specified) currentCourseware = specified;
+        }
+      }
+      
+      // 更新页面标题
+      document.getElementById('courseName').textContent = currentCourse.name;
+      document.title = `${currentCourse.name} - 航空培训平台`;
+      
+      // 更新课程信息
+      document.getElementById('infoCourseName').textContent = currentCourse.name;
+      document.getElementById('infoCategory').textContent = currentCourse.categoryName;
+      document.getElementById('infoInstructor').textContent = currentCourse.instructor;
+      document.getElementById('infoHours').textContent = `${currentCourse.totalHours} 课时`;
+      
+      // 加载章节
+      loadChapters();
+      
+      // 加载笔记
+      loadNotes();
+      
+      // 开始学习记录
+      startLearning();
+      
+      // 更新进度
+      updateProgress();
+    }
+    
+    // 加载章节
+    function loadChapters() {
+      const container = document.getElementById('chapterList');
+      
+      if (!currentCourseware || !currentCourseware.chapters) {
+        container.innerHTML = '<p style="color:var(--text-secondary);text-align:center;">暂无章节信息</p>';
+        return;
+      }
+      
+      container.innerHTML = currentCourseware.chapters.map((chapter, index) => `
+        <div class="chapter-item ${index === currentChapterIndex ? 'active' : ''} ${completedChapters.has(index) ? 'completed' : ''}" 
+             onclick="selectChapter(${index})">
+          <div class="chapter-title">${chapter.id}. ${chapter.title}</div>
+          <div class="chapter-duration">${chapter.duration} 分钟</div>
+          ${completedChapters.has(index) ? `
+            <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          ` : ''}
+        </div>
+      `).join('');
+      
+      updateChapterIndicator();
+    }
+    
+    // 选择章节
+    function selectChapter(index) {
+      currentChapterIndex = index;
+      const chapter = currentCourseware.chapters[index];
+      
+      document.getElementById('chapterName').textContent = chapter.title;
+      document.getElementById('placeholderContent').style.display = 'none';
+      
+      // 显示iframe并加载课件
+      const iframe = document.getElementById('coursewareIframe');
+      iframe.style.display = 'block';
+      
+      // 由于是模拟环境，这里使用示例URL
+      // 实际使用时应该使用真实课件URL
+      const demoUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent('https://example.com/demo.html')}`;
+      
+      // 演示模式：显示提示
+      iframe.style.display = 'none';
+      document.getElementById('placeholderContent').innerHTML = `
+        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="1" style="margin-bottom:16px;">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+          <line x1="8" y1="21" x2="16" y2="21"/>
+          <line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
+        <p style="font-size:18px;color:#888;margin-bottom:8px;">[ 演示模式 ]</p>
+        <p style="font-size:16px;color:#666;">正在加载：${chapter.title}</p>
+        <p style="font-size:13px;color:#555;margin-top:16px;max-width:400px;">
+          Storyline H5课件将通过iframe嵌入此处显示。<br>
+          支持标准JavaScript API与平台通信。
+        </p>
+      `;
+      document.getElementById('placeholderContent').style.display = 'block';
+      
+      // 更新UI
+      loadChapters();
+      
+      // 标记该章节为已完成
+      completedChapters.add(index);
+      updateProgress();
+    }
+    
+    // 上一章
+    function prevChapter() {
+      if (currentChapterIndex > 0) {
+        selectChapter(currentChapterIndex - 1);
+      }
+    }
+    
+    // 下一章
+    function nextChapter() {
+      if (currentCourseware && currentChapterIndex < currentCourseware.chapters.length - 1) {
+        selectChapter(currentChapterIndex + 1);
+      } else {
+        // 完成所有章节
+        completeCourse();
+      }
+    }
+    
+    // 更新章节指示器
+    function updateChapterIndicator() {
+      if (currentCourseware && currentCourseware.chapters) {
+        document.getElementById('chapterIndicator').textContent = 
+          `第 ${currentChapterIndex + 1} / ${currentCourseware.chapters.length} 章`;
+      }
+    }
+    
+    // 开始学习
+    function startLearning() {
+      const user = LMS.Auth.init();
+      learningRecord = LMS.LearningTracker.startLearning(
+        user.id,
+        currentCourse.id,
+        currentCourseware?.id
+      );
+      
+      // 启动计时器
+      timerSeconds = learningRecord.duration || 0;
+      updateTimerDisplay();
+      timerInterval = setInterval(() => {
+        timerSeconds++;
+        updateTimerDisplay();
+        
+        // 每30秒保存一次
+        if (timerSeconds % 30 === 0) {
+          LMS.LearningTracker.updateDuration(learningRecord.id, 30);
+        }
+      }, 1000);
+    }
+    
+    // 更新计时器显示
+    function updateTimerDisplay() {
+      const hours = Math.floor(timerSeconds / 3600);
+      const minutes = Math.floor((timerSeconds % 3600) / 60);
+      const seconds = timerSeconds % 60;
+      
+      if (hours > 0) {
+        document.getElementById('timerDisplay').textContent = 
+          `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      } else {
+        document.getElementById('timerDisplay').textContent = 
+          `${minutes}:${String(seconds).padStart(2, '0')}`;
+      }
+    }
+    
+    // 更新进度
+    function updateProgress() {
+      const totalChapters = currentCourseware?.chapters?.length || 1;
+      const completedCount = completedChapters.size;
+      const progress = Math.round((completedCount / totalChapters) * 100);
+      
+      document.getElementById('infoProgress').textContent = `${progress}%`;
+      document.getElementById('infoProgressBar').style.width = `${progress}%`;
+    }
+    
+    // 完成课程
+    function completeCourse() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+      }
+      
+      if (learningRecord) {
+        LMS.LearningTracker.endLearning(learningRecord.id, 100);
+      }
+      
+      alert('🎉 恭喜完成本章节学习！');
+      saveLearningProgress();
+    }
+    
+    // 保存学习进度
+    function saveLearningProgress() {
+      if (learningRecord && timerInterval) {
+        const remaining = timerSeconds % 30;
+        if (remaining > 0) {
+          LMS.LearningTracker.updateDuration(learningRecord.id, remaining);
+        }
+      }
+    }
+    
+    // 切换标签
+    function switchTab(tabName) {
+      document.querySelectorAll('.player-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+      
+      document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
+      document.getElementById(`${tabName}Panel`).style.display = 'block';
+    }
+    
+    // 加载笔记
+    function loadNotes() {
+      const user = LMS.Auth.init();
+      const notes = LMS.Storage.get('notes') || [];
+      const courseNotes = notes.filter(n => 
+        n.userId === user.id && n.courseId === currentCourse.id
+      );
+      
+      const container = document.getElementById('notesList');
+      
+      if (courseNotes.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-secondary);text-align:center;">暂无笔记</p>';
+        return;
+      }
+      
+      container.innerHTML = courseNotes.map(note => `
+        <div class="note-item">
+          <div class="note-time">${LMS.UI.formatDate(note.createdAt, 'short')}</div>
+          <div class="note-content">${note.content}</div>
+        </div>
+      `).join('');
+    }
+    
+    // 添加笔记
+    function addNote() {
+      const content = document.getElementById('noteInput').value.trim();
+      if (!content) {
+        LMS.UI.toast('请输入笔记内容', 'warning');
+        return;
+      }
+      
+      const user = LMS.Auth.init();
+      const notes = LMS.Storage.get('notes') || [];
+      
+      notes.push({
+        id: Date.now().toString(),
+        userId: user.id,
+        courseId: currentCourse.id,
+        content,
+        createdAt: new Date().toISOString()
+      });
+      
+      LMS.Storage.set('notes', notes);
+      document.getElementById('noteInput').value = '';
+      loadNotes();
+      LMS.UI.toast('笔记已保存', 'success');
+    }
+    
+    // 全屏切换
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    }
+    
+    // 处理iframe消息（Storyline API）
+    function handleIframeMessage(event) {
+      // 验证消息来源
+      if (event.origin !== window.location.origin) return;
+      
+      const data = event.data;
+      
+      // Storyline标准API
+      if (data.type === 'storyline') {
+        switch (data.action) {
+          case 'getProgress':
+            // 返回当前进度
+            const totalChapters = currentCourseware?.chapters?.length || 1;
+            const progress = Math.round((completedChapters.size / totalChapters) * 100);
+            event.source.postMessage({
+              type: 'storyline',
+              action: 'setProgress',
+              value: progress
+            }, event.origin);
+            break;
+            
+          case 'complete':
+            // 标记完成
+            completedChapters.add(currentChapterIndex);
+            updateProgress();
+            break;
+            
+          case 'logTime':
+            // 记录时间
+            timerSeconds += data.value || 0;
+            break;
+        }
+      }
+    }
+  </script>
+</body>
+</html>

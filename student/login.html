@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录 - 航空培训在线学习平台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/styles.css">
+  <style>
+    .login-features {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-color);
+    }
+    .login-feature {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    .login-feature svg {
+      width: 18px;
+      height: 18px;
+      color: var(--primary-color);
+    }
+    .forgot-password {
+      text-align: right;
+    }
+    .forgot-password a {
+      font-size: 13px;
+      color: var(--primary-color);
+    }
+  </style>
+</head>
+<body>
+  <div class="login-page">
+    <div class="login-container">
+      <div class="login-card">
+        <div class="login-logo">
+          <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="80" height="80" rx="16" fill="#1a5fb4"/>
+            <path d="M40 15L55 35H25L40 15Z" fill="white" opacity="0.9"/>
+            <path d="M40 35V55M35 50H45M25 55H55L50 65H30L25 55Z" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="40" cy="38" r="3" fill="white"/>
+          </svg>
+          <h1>航空培训平台</h1>
+          <p>机务维修在线学习系统</p>
+        </div>
+        
+        <form class="login-form" id="loginForm">
+          <div class="form-group">
+            <label for="username">用户名 / 邮箱</label>
+            <input type="text" id="username" name="username" placeholder="请输入用户名或邮箱" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="password">密码</label>
+            <input type="password" id="password" name="password" placeholder="请输入密码" required>
+          </div>
+          
+          <div class="remember-row">
+            <label>
+              <input type="checkbox" id="remember" name="remember">
+              <span>记住登录状态</span>
+            </label>
+            <div class="forgot-password">
+              <a href="#">忘记密码？</a>
+            </div>
+          </div>
+          
+          <button type="submit" class="btn btn-primary btn-block btn-lg">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3"/>
+            </svg>
+            登录
+          </button>
+        </form>
+        
+        <div class="login-features">
+          <div class="login-feature">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <span>数据安全</span>
+          </div>
+          <div class="login-feature">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+              <line x1="8" y1="21" x2="16" y2="21"/>
+              <line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+            <span>多端同步</span>
+          </div>
+          <div class="login-feature">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            <span>专业认证</span>
+          </div>
+        </div>
+      </div>
+      
+      <p style="text-align:center;color:rgba(255,255,255,0.6);margin-top:24px;font-size:13px;">
+        © 2024 捷安高科航空产品线 · C919 CBT培训平台
+      </p>
+    </div>
+  </div>
+
+  <script src="../shared/app.js"></script>
+  <script>
+    // 页面初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      // 检查是否已登录
+      LMS.initializeMockData();
+      const currentUser = LMS.Auth.init();
+      
+      if (currentUser && currentUser.role === 'student') {
+        // 已登录，跳转到学习中心
+        window.location.href = 'index.html';
+      }
+    });
+    
+    // 登录表单提交
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const remember = document.getElementById('remember').checked;
+      
+      if (!username || !password) {
+        LMS.UI.toast('请输入用户名和密码', 'error');
+        return;
+      }
+      
+      const result = LMS.Auth.login(username, password);
+      
+      if (result.success) {
+        if (result.user.role === 'admin') {
+          // 管理员跳转到后台
+          LMS.UI.toast('登录成功，即将跳转到管理后台...', 'success');
+          setTimeout(() => {
+            window.location.href = '../admin/dashboard.html';
+          }, 1000);
+        } else {
+          // 学员跳转到学习中心
+          LMS.UI.toast('登录成功，欢迎回来 ' + result.user.name + '！', 'success');
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 1000);
+        }
+      } else {
+        LMS.UI.toast(result.message, 'error');
+      }
+    });
+    
+    // 演示账号快速登录
+    function quickLogin(role) {
+      if (role === 'student') {
+        document.getElementById('username').value = 'zhangwei';
+        document.getElementById('password').value = '123456';
+      } else {
+        document.getElementById('username').value = 'admin';
+        document.getElementById('password').value = 'admin123';
+      }
+      document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+    }
+  </script>
+</body>
+</html>

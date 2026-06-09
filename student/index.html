@@ -1,377 +1,440 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的课程 - 航空CBT培训平台</title>
-    <link rel="stylesheet" href="../shared/styles.css">
-    <style>
-        .welcome-banner {
-            background: linear-gradient(135deg, var(--primary-dark) 0%, #2d4a6f 100%);
-            color: white;
-            padding: 32px;
-            border-radius: 12px;
-            margin-bottom: 24px;
-        }
-        
-        .welcome-banner h2 {
-            font-size: 24px;
-            margin-bottom: 8px;
-        }
-        
-        .welcome-banner p {
-            opacity: 0.8;
-            font-size: 14px;
-        }
-        
-        .stats-overview {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-        
-        .stat-mini {
-            background: var(--bg-white);
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            text-align: center;
-        }
-        
-        .stat-mini .value {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--primary-blue);
-        }
-        
-        .stat-mini .label {
-            font-size: 13px;
-            color: var(--text-gray);
-            margin-top: 4px;
-        }
-        
-        .section-title {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 16px;
-        }
-        
-        .section-title h3 {
-            font-size: 18px;
-            font-weight: 600;
-        }
-        
-        .course-card {
-            position: relative;
-        }
-        
-        .course-card .badge {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-        }
-        
-        .course-progress-bar {
-            margin-bottom: 12px;
-        }
-        
-        .course-meta {
-            display: flex;
-            gap: 16px;
-            font-size: 13px;
-            color: var(--text-gray);
-        }
-        
-        .course-meta span {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        
-        .course-actions {
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            gap: 12px;
-        }
-        
-        .btn-start {
-            flex: 1;
-        }
-        
-        @media (max-width: 1024px) {
-            .stats-overview {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        
-        @media (max-width: 640px) {
-            .stats-overview {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>学员学习中心 - C919系统CBT培训平台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/styles.css">
+  <style>
+    .header { background: linear-gradient(135deg, #0d47a1 0%, #1565c0 50%, #1976d2 100%); }
+    .header-logo { color: var(--text-white); font-weight: 700; }
+    .header-search input { background: rgba(255,255,255,0.1); border: none; color: white; }
+    .header-search input::placeholder { color: rgba(255,255,255,0.6); }
+    .user-menu { border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 4px 16px; }
+    
+    /* ATA系统卡片 */
+    .ata-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 24px; }
+    .ata-card {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .ata-card:hover { transform: translateY(-6px); box-shadow: 0 12px 32px rgba(0,0,0,0.15); }
+    .ata-card-header {
+      padding: 20px;
+      background: linear-gradient(135deg, #1565c0, #0d47a1);
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .ata-code {
+      font-size: 32px;
+      font-weight: 800;
+      opacity: 0.9;
+      min-width: 70px;
+    }
+    .ata-info h3 { font-size: 16px; margin-bottom: 4px; }
+    .ata-info span { font-size: 12px; opacity: 0.8; }
+    .ata-card-body { padding: 16px 20px; }
+    .ata-meta { display: flex; justify-content: space-between; font-size: 13px; color: #666; margin-bottom: 12px; }
+    .ata-progress-bar { height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden; }
+    .ata-progress-fill { height: 100%; background: linear-gradient(90deg, #1565c0, #42a5f5); border-radius: 3px; transition: width 0.3s; }
+    .ata-card-footer { padding: 12px 20px; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+    .ata-status { font-size: 12px; padding: 4px 10px; border-radius: 12px; }
+    .ata-status.not-started { background: #fff3e0; color: #f57c00; }
+    .ata-status.in-progress { background: #e3f2fd; color: #1976d2; }
+    .ata-status.completed { background: #e8f5e9; color: #388e3c; }
+    
+    /* 返回按钮 */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: white;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: background 0.2s;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.2); }
+    
+    .welcome-panel { background: linear-gradient(135deg, #1565c0, #0d47a1); color: white; padding: 32px; border-radius: 16px; margin-bottom: 24px; }
+    .welcome-stats { display: flex; gap: 40px; margin-top: 24px; }
+    .welcome-stat-value { font-size: 32px; font-weight: 700; }
+    .welcome-stat-label { font-size: 13px; opacity: 0.8; }
+    
+    .course-detail-card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 24px; }
+    .chapter-list-item {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      background: #f8fafc;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .chapter-list-item:hover { background: #e3f2fd; }
+    .chapter-list-item.completed { background: #e8f5e9; }
+    .chapter-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 16px; font-size: 14px; }
+    .chapter-info { flex: 1; }
+    .chapter-title { font-weight: 500; margin-bottom: 4px; }
+    .chapter-duration { font-size: 12px; color: #888; }
+  </style>
 </head>
 <body>
-    <div class="main-layout">
-        <!-- 侧边栏 -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h2>航空CBT培训</h2>
-                <p>Learning Management System</p>
-            </div>
-            <nav class="sidebar-nav">
-                <a href="index.html" class="nav-item active">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                        <polyline points="9 22 9 12 15 12 15 22"/>
-                    </svg>
-                    首页
-                </a>
-                <a href="courses.html" class="nav-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                    </svg>
-                    我的课程
-                </a>
-                <a href="progress.html" class="nav-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="20" x2="18" y2="10"/>
-                        <line x1="12" y1="20" x2="12" y2="4"/>
-                        <line x1="6" y1="20" x2="6" y2="14"/>
-                    </svg>
-                    学习记录
-                </a>
-                <a href="profile.html" class="nav-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                        <circle cx="12" cy="7" r="4"/>
-                    </svg>
-                    个人中心
-                </a>
-                <div class="nav-divider"></div>
-                <a href="#" class="nav-item" onclick="LMS.logout(); return false;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                        <polyline points="16 17 21 12 16 7"/>
-                        <line x1="21" y1="12" x2="9" y2="12"/>
-                    </svg>
-                    退出登录
-                </a>
-            </nav>
-        </aside>
-
-        <!-- 主内容 -->
-        <main class="main-content">
-            <header class="header">
-                <div class="header-left">
-                    <h1>欢迎回来</h1>
-                </div>
-                <div class="header-right">
-                    <div class="user-info">
-                        <div class="user-avatar" id="userAvatar">学</div>
-                        <div>
-                            <div class="user-name" id="userName">加载中...</div>
-                            <div class="user-role">学员</div>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            <div class="page-content">
-                <!-- 欢迎横幅 -->
-                <div class="welcome-banner">
-                    <h2 id="welcomeText">你好，张伟</h2>
-                    <p>继续你的学习之旅，今天要完成哪些课程呢？</p>
-                </div>
-
-                <!-- 学习统计 -->
-                <div class="stats-overview">
-                    <div class="stat-mini">
-                        <div class="value" id="totalCourses">0</div>
-                        <div class="label">我的课程</div>
-                    </div>
-                    <div class="stat-mini">
-                        <div class="value" id="completedCourses">0</div>
-                        <div class="label">已完成</div>
-                    </div>
-                    <div class="stat-mini">
-                        <div class="value" id="totalHours">0h</div>
-                        <div class="label">总学习时长</div>
-                    </div>
-                    <div class="stat-mini">
-                        <div class="value" id="completionRate">0%</div>
-                        <div class="label">完成率</div>
-                    </div>
-                </div>
-
-                <!-- 进行中的课程 -->
-                <div class="section-title">
-                    <h3>继续学习</h3>
-                    <a href="courses.html" class="btn btn-secondary">查看全部</a>
-                </div>
-                <div class="course-grid" id="inProgressCourses">
-                    <div class="loading">
-                        <div class="spinner"></div>
-                    </div>
-                </div>
-
-                <!-- 所有课程 -->
-                <div class="section-title" style="margin-top: 32px;">
-                    <h3>全部课程</h3>
-                </div>
-                <div class="course-grid" id="allCourses">
-                    <div class="loading">
-                        <div class="spinner"></div>
-                    </div>
-                </div>
-            </div>
-        </main>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-logo">
+      <svg width="40" height="40" viewBox="0 0 80 80" fill="none">
+        <rect width="80" height="80" rx="16" fill="rgba(255,255,255,0.2)"/>
+        <path d="M40 15L55 35H25L40 15Z" fill="white"/>
+        <path d="M25 35L40 55L55 35" stroke="white" stroke-width="3" fill="none"/>
+        <path d="M40 55V65" stroke="white" stroke-width="3"/>
+      </svg>
+      <span>C919系统CBT培训平台</span>
     </div>
+    
+    <div class="header-search">
+      <input type="text" placeholder="搜索系统或课件..." id="searchInput">
+    </div>
+    
+    <div class="header-actions">
+      <div class="dropdown">
+        <div class="user-menu">
+          <div class="user-avatar" id="userAvatar">Z</div>
+          <div class="user-info">
+            <div class="user-name" id="userName">张三</div>
+            <div class="user-role">学员</div>
+          </div>
+        </div>
+        <div class="dropdown-menu">
+          <a href="profile.html" class="dropdown-item">📋 我的档案</a>
+          <a href="#" class="dropdown-item" onclick="logout()">🚪 退出登录</a>
+        </div>
+      </div>
+    </div>
+  </header>
 
-    <script src="../shared/app.js"></script>
-    <script>
-        // 检查登录状态
-        const user = LMS.checkAuth(['student', 'admin', 'super_admin']);
-        if (!user) {
-            // 如果未登录，重定向到登录页
-        } else {
-            // 渲染用户信息
-            document.getElementById('userName').textContent = user.name;
-            document.getElementById('welcomeText').textContent = `你好，${user.name}`;
-            document.getElementById('userAvatar').textContent = user.name.charAt(0);
-            
-            // 加载统计数据
-            loadStats();
-            
-            // 加载课程列表
-            loadCourses();
-        }
+  <!-- Main Content -->
+  <div class="main-content" style="padding:24px;">
+    <!-- 返回按钮 -->
+    <a href="index.html" class="back-btn" id="backBtn" style="display:none;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      返回系统列表
+    </a>
+    
+    <!-- 欢迎面板 -->
+    <div class="welcome-panel" id="welcomePanel">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <h2 id="welcomeTitle">下午好，张伟</h2>
+          <p style="opacity:0.8;margin-top:4px;">C919大型客机系统CBT培训学习平台</p>
+          <div class="welcome-stats">
+            <div class="welcome-stat">
+              <div class="welcome-stat-value" id="totalHours">0</div>
+              <div class="welcome-stat-label">累计学习时长</div>
+            </div>
+            <div class="welcome-stat">
+              <div class="welcome-stat-value" id="completedSystems">0</div>
+              <div class="welcome-stat-label">已完成系统</div>
+            </div>
+            <div class="welcome-stat">
+              <div class="welcome-stat-value" id="totalSystems">0</div>
+              <div class="welcome-stat-label">总系统数</div>
+            </div>
+          </div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:64px;">✈️</div>
+          <div style="opacity:0.8;">C919</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 系统列表（第一层） -->
+    <div class="ata-grid" id="ataGrid">
+      <!-- 动态加载ATA系统 -->
+    </div>
+    
+    <!-- 章节列表（第二层） -->
+    <div id="chapterView" style="display:none;">
+      <div class="course-detail-card">
+        <h3 style="margin-bottom:20px;" id="systemTitle">系统名称</h3>
+        <div id="chapterList">
+          <!-- 动态加载章节 -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../shared/app.js"></script>
+  <script>
+    // 页面初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      LMS.initializeMockData();
+      const user = LMS.Auth.init();
+      
+      if (!user || user.role !== 'student') {
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      // 更新用户信息
+      document.getElementById('userName').textContent = user.name;
+      document.getElementById('userAvatar').textContent = user.name.charAt(0);
+      document.getElementById('welcomeTitle').textContent = getGreeting() + '，' + user.name;
+      
+      // 加载统计数据
+      loadStats(user.id);
+      
+      // 检查是否有系统ID参数
+      const urlParams = new URLSearchParams(window.location.search);
+      const systemId = urlParams.get('systemId');
+      
+      if (systemId) {
+        showSystemDetail(systemId);
+      } else {
+        showSystemList();
+      }
+      
+      // 绑定搜索事件
+      document.getElementById('searchInput').addEventListener('input', debounce(handleSearch, 300));
+    });
+    
+    // 获取问候语
+    function getGreeting() {
+      const hour = new Date().getHours();
+      if (hour < 12) return '早上好';
+      if (hour < 18) return '下午好';
+      return '晚上好';
+    }
+    
+    // 加载统计数据
+    function loadStats(userId) {
+      const totalDuration = LMS.LearningTracker.getTotalDuration(userId);
+      const hours = Math.floor(totalDuration / 3600);
+      const minutes = Math.floor((totalDuration % 3600) / 60);
+      document.getElementById('totalHours').textContent = hours > 0 ? `${hours}h${minutes}m` : `${minutes}m`;
+      
+      // 获取所有系统
+      const systems = LMS.ATAManager.getAll();
+      document.getElementById('totalSystems').textContent = systems.length;
+      
+      // 计算已完成系统数
+      const records = LMS.LearningTracker.getUserRecords(userId);
+      const completedSystems = new Set();
+      records.filter(r => r.status === 'completed').forEach(r => {
+        const system = systems.find(s => s.id === r.courseId);
+        if (system) completedSystems.add(system.ataCode);
+      });
+      document.getElementById('completedSystems').textContent = completedSystems.size;
+    }
+    
+    // 显示系统列表
+    function showSystemList() {
+      const grid = document.getElementById('ataGrid');
+      const systems = LMS.ATAManager.getAll();
+      const user = LMS.Auth.init();
+      const records = LMS.LearningTracker.getUserRecords(user.id);
+      
+      // 计算每个系统的进度
+      const systemProgress = {};
+      systems.forEach(sys => {
+        const sysRecords = records.filter(r => r.courseId === sys.id);
+        const totalChapters = sys.chapters || 1;
+        const completed = sysRecords.filter(r => r.status === 'completed').length;
+        systemProgress[sys.id] = {
+          progress: Math.round((completed / totalChapters) * 100),
+          completed: completed,
+          total: totalChapters,
+          status: completed >= totalChapters ? 'completed' : (completed > 0 ? 'in-progress' : 'not-started')
+        };
+      });
+      
+      grid.innerHTML = systems.map(sys => {
+        const prog = systemProgress[sys.id] || { progress: 0, status: 'not-started' };
+        const statusText = prog.status === 'completed' ? '已完成' : (prog.status === 'in-progress' ? '进行中' : '未开始');
+        const statusClass = prog.status === 'completed' ? 'completed' : (prog.status === 'in-progress' ? 'in-progress' : 'not-started');
         
-        function loadStats() {
-            const studentId = user.userId;
-            
-            // 获取分配的课程
-            const assignments = LMS.getStudentAssignments(studentId);
-            const totalCourses = assignments.length;
-            
-            // 获取学习记录
-            const records = LMS.getStudentRecords(studentId);
-            const completedCourses = new Set(records.filter(r => r.status === 'completed').map(r => r.courseId)).size;
-            
-            // 计算总学习时长
-            const totalSeconds = LMS.getStudentTotalTime(studentId);
-            const totalHours = Math.round(totalSeconds / 3600);
-            
-            // 计算完成率
-            const completionRate = totalCourses > 0 ? Math.round((completedCourses / totalCourses) * 100) : 0;
-            
-            document.getElementById('totalCourses').textContent = totalCourses;
-            document.getElementById('completedCourses').textContent = completedCourses;
-            document.getElementById('totalHours').textContent = totalHours + 'h';
-            document.getElementById('completionRate').textContent = completionRate + '%';
-        }
+        return `
+          <div class="ata-card" onclick="showSystemDetail('${sys.id}')">
+            <div class="ata-card-header">
+              <div class="ata-code">${sys.ataCode}</div>
+              <div class="ata-info">
+                <h3>${sys.name}</h3>
+                <span>${sys.chapters || 0} 章节</span>
+              </div>
+            </div>
+            <div class="ata-card-body">
+              <div class="ata-meta">
+                <span>📚 ${sys.chapters || 0} 章节</span>
+                <span>⏱️ ${sys.duration || 0} 分钟</span>
+              </div>
+              <div class="ata-progress-bar">
+                <div class="ata-progress-fill" style="width: ${prog.progress}%"></div>
+              </div>
+              <div style="text-align:right;font-size:12px;color:#666;margin-top:4px;">${prog.progress}% 完成</div>
+            </div>
+            <div class="ata-card-footer">
+              <span class="ata-status ${statusClass}">${statusText}</span>
+              <span style="font-size:12px;color:#888;">👆 点击进入学习</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    // 显示系统详情
+    function showSystemDetail(systemId) {
+      const system = LMS.ATAManager.getById(systemId);
+      if (!system) {
+        alert('系统不存在');
+        showSystemList();
+        return;
+      }
+      
+      document.getElementById('ataGrid').style.display = 'none';
+      document.getElementById('chapterView').style.display = 'block';
+      document.getElementById('backBtn').style.display = 'inline-flex';
+      document.getElementById('welcomePanel').style.display = 'none';
+      document.getElementById('systemTitle').textContent = `${system.ataCode} ${system.name}`;
+      
+      const user = LMS.Auth.init();
+      const records = LMS.LearningTracker.getUserRecords(user.id).filter(r => r.courseId === systemId);
+      const completedChapters = records.filter(r => r.status === 'completed').map(r => r.coursewareId);
+      
+      const container = document.getElementById('chapterList');
+      if (!system.chapters || system.chapters.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center;padding:48px;color:#888;">
+            <div style="font-size:48px;margin-bottom:16px;">📂</div>
+            <p>暂无章节内容</p>
+            <p style="font-size:13px;margin-top:8px;">请联系管理员上传课件</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = system.chapters.map((chapter, index) => {
+        const isCompleted = completedChapters.includes(chapter.id);
+        const bgColor = isCompleted ? '#e8f5e9' : '#f8fafc';
+        const iconBg = isCompleted ? '#4caf50' : '#1565c0';
+        const iconText = isCompleted ? '✓' : (index + 1);
         
-        function loadCourses() {
-            const studentId = user.userId;
-            const assignments = LMS.getStudentAssignments(studentId);
-            const courses = LMS.getCourses();
-            const records = LMS.getStudentRecords(studentId);
-            
-            const inProgressContainer = document.getElementById('inProgressCourses');
-            const allContainer = document.getElementById('allCourses');
-            
-            if (assignments.length === 0) {
-                inProgressContainer.innerHTML = `
-                    <div class="empty-state">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                        </svg>
-                        <h4>暂无分配的课程</h4>
-                        <p>请联系管理员为您分配培训课程</p>
-                    </div>
-                `;
-                allContainer.innerHTML = '';
-                return;
-            }
-            
-            let inProgressHTML = '';
-            let allHTML = '';
-            
-            assignments.forEach(asg => {
-                const course = courses.find(c => c.id === asg.courseId);
-                if (!course) return;
-                
-                // 获取该课程的完成进度
-                const courseRecords = records.filter(r => r.courseId === course.id && r.status === 'completed');
-                const completedChapters = new Set(courseRecords.map(r => r.chapterId)).size;
-                const totalChapters = course.chapters?.length || 1;
-                const progress = Math.round((completedChapters / totalChapters) * 100);
-                
-                // 判断是否在进行中
-                const hasInProgress = records.some(r => r.courseId === course.id && r.status === 'in_progress');
-                const isCompleted = progress >= 100;
-                
-                const cardHTML = `
-                    <div class="course-card" onclick="location.href='course.html?id=${course.id}'">
-                        ${isCompleted ? '<span class="badge badge-success">已完成</span>' : ''}
-                        <div class="course-card-header">
-                            <h4>${course.name}</h4>
-                            <div class="course-code">${course.code} · ${course.aircraft}</div>
-                        </div>
-                        <div class="course-card-body">
-                            <div class="course-progress-bar">
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: ${progress}%"></div>
-                                </div>
-                                <div class="progress-text">
-                                    <span>${course.chapters?.length || 0} 个章节</span>
-                                    <span>${progress}%</span>
-                                </div>
-                            </div>
-                            <div class="course-meta">
-                                <span>
-                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                                        <circle cx="12" cy="12" r="10"/>
-                                        <polyline points="12 6 12 12 16 14"/>
-                                    </svg>
-                                    ${course.chapters?.length * 30} 分钟
-                                </span>
-                                <span>
-                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                                        <polyline points="22 4 12 14.01 9 11.01"/>
-                                    </svg>
-                                    ${completedChapters}/${totalChapters} 已完成
-                                </span>
-                            </div>
-                            <div class="course-actions">
-                                <button class="btn ${isCompleted ? 'btn-secondary' : 'btn-primary'} btn-start">
-                                    ${isCompleted ? '重新学习' : '继续学习'}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                if (hasInProgress || (!isCompleted && completedChapters > 0)) {
-                    inProgressHTML += cardHTML;
-                }
-                allHTML += cardHTML;
-            });
-            
-            inProgressContainer.innerHTML = inProgressHTML || `
-                <div class="empty-state">
-                    <p>暂无正在进行的课程</p>
-                </div>
-            `;
-            allContainer.innerHTML = allHTML;
-        }
-    </script>
+        return `
+          <div class="chapter-list-item ${isCompleted ? 'completed' : ''}" style="background:${bgColor};" onclick="startChapter('${systemId}', '${chapter.id}')">
+            <div class="chapter-icon" style="background:${iconBg};color:white;font-weight:bold;">
+              ${iconText}
+            </div>
+            <div class="chapter-info">
+              <div class="chapter-title">${chapter.title}</div>
+              <div class="chapter-duration">⏱️ ${chapter.duration || 30} 分钟</div>
+            </div>
+            <div style="font-size:13px;color:${isCompleted ? '#4caf50' : '#1565c0'};">
+              ${isCompleted ? '已完成 ✓' : '开始学习 →'}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    // 开始章节学习
+    function startChapter(systemId, chapterId) {
+      window.location.href = `player.html?courseId=${systemId}&coursewareId=${chapterId}`;
+    }
+    
+    // 返回系统列表
+    function goBack() {
+      document.getElementById('ataGrid').style.display = 'grid';
+      document.getElementById('chapterView').style.display = 'none';
+      document.getElementById('backBtn').style.display = 'none';
+      document.getElementById('welcomePanel').style.display = 'block';
+      history.replaceState(null, '', window.location.pathname);
+    }
+    
+    // 搜索功能
+    function handleSearch(keyword) {
+      const grid = document.getElementById('ataGrid');
+      const systems = LMS.ATAManager.getAll();
+      const filtered = systems.filter(sys => 
+        sys.name.toLowerCase().includes(keyword.toLowerCase()) ||
+        sys.ataCode.toLowerCase().includes(keyword.toLowerCase())
+      );
+      
+      if (filtered.length === 0) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:#888;">未找到匹配的系统</div>';
+        return;
+      }
+      
+      // 复用showSystemList的逻辑但用filtered数据
+      const user = LMS.Auth.init();
+      const records = LMS.LearningTracker.getUserRecords(user.id);
+      
+      grid.innerHTML = filtered.map(sys => {
+        const sysRecords = records.filter(r => r.courseId === sys.id);
+        const totalChapters = sys.chapters?.length || 1;
+        const completed = sysRecords.filter(r => r.status === 'completed').length;
+        const progress = Math.round((completed / totalChapters) * 100);
+        const statusText = progress >= 100 ? '已完成' : (progress > 0 ? '进行中' : '未开始');
+        const statusClass = progress >= 100 ? 'completed' : (progress > 0 ? 'in-progress' : 'not-started');
+        
+        return `
+          <div class="ata-card" onclick="showSystemDetail('${sys.id}')">
+            <div class="ata-card-header">
+              <div class="ata-code">${sys.ataCode}</div>
+              <div class="ata-info">
+                <h3>${sys.name}</h3>
+                <span>${sys.chapters?.length || 0} 章节</span>
+              </div>
+            </div>
+            <div class="ata-card-body">
+              <div class="ata-meta">
+                <span>📚 ${sys.chapters?.length || 0} 章节</span>
+                <span>⏱️ ${sys.duration || 0} 分钟</span>
+              </div>
+              <div class="ata-progress-bar">
+                <div class="ata-progress-fill" style="width: ${progress}%"></div>
+              </div>
+              <div style="text-align:right;font-size:12px;color:#666;margin-top:4px;">${progress}% 完成</div>
+            </div>
+            <div class="ata-card-footer">
+              <span class="ata-status ${statusClass}">${statusText}</span>
+              <span style="font-size:12px;color:#888;">👆 点击进入学习</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    // 退出登录
+    function logout() {
+      LMS.Auth.logout();
+      window.location.href = 'login.html';
+    }
+    
+    // 防抖函数
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+  </script>
 </body>
 </html>
