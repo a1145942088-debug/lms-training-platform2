@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>课件预览 - C919系统CBT培训平台</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+      background: #1a1a2e;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .preview-header {
+      background: #16213e;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #0f3460;
+    }
+    .preview-title {
+      color: #e94560;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .preview-info {
+      color: #888;
+      font-size: 14px;
+    }
+    .preview-actions {
+      display: flex;
+      gap: 12px;
+    }
+    .preview-btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .preview-btn-close {
+      background: #e94560;
+      color: white;
+    }
+    .preview-btn-close:hover { background: #c73e54; }
+    .preview-btn-fullscreen {
+      background: #0f3460;
+      color: white;
+    }
+    .preview-btn-fullscreen:hover { background: #1a4a7a; }
+    .preview-content {
+      flex: 1;
+      position: relative;
+      background: white;
+    }
+    .preview-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    .loading-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+    .loading-spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid #e0e0e0;
+      border-top-color: #1a5fb4;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .loading-text {
+      margin-top: 20px;
+      color: #666;
+      font-size: 16px;
+    }
+    .loading-progress {
+      margin-top: 12px;
+      color: #1a5fb4;
+      font-size: 14px;
+    }
+    .error-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #fff3f3;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      text-align: center;
+    }
+    .error-overlay.show { display: flex; }
+    .error-icon { font-size: 64px; margin-bottom: 16px; }
+    .error-title { color: #c53030; font-size: 20px; margin-bottom: 12px; }
+    .error-message { color: #666; font-size: 14px; max-width: 500px; line-height: 1.6; }
+    .error-details {
+      margin-top: 20px;
+      padding: 16px;
+      background: #fed7d7;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #c53030;
+      max-width: 500px;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <div class="preview-header">
+    <div>
+      <div class="preview-title" id="coursewareName">课件预览</div>
+      <div class="preview-info" id="coursewareInfo"></div>
+    </div>
+    <div class="preview-actions">
+      <button class="preview-btn preview-btn-fullscreen" onclick="toggleFullscreen()">
+        ⛶ 全屏
+      </button>
+      <button class="preview-btn preview-btn-close" onclick="closeWindow()">
+        ✕ 关闭
+      </button>
+    </div>
+  </div>
+  
+  <div class="preview-content">
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="loading-spinner"></div>
+      <div class="loading-text" id="loadingText">正在加载课件...</div>
+      <div class="loading-progress" id="loadingProgress"></div>
+    </div>
+    
+    <div class="error-overlay" id="errorOverlay">
+      <div class="error-icon">⚠️</div>
+      <div class="error-title" id="errorTitle">加载失败</div>
+      <div class="error-message" id="errorMessage"></div>
+      <div class="error-details" id="errorDetails"></div>
+    </div>
+    
+    <iframe class="preview-iframe" id="previewIframe" sandbox="allow-scripts allow-same-origin"></iframe>
+  </div>
+
+  <!-- JSZip库 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  
+  <script>
+    // 获取URL参数
+    function getUrlParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+    
+    // 获取courseware ID
+    const coursewareId = getUrlParam('id');
+    const coursewareName = decodeURIComponent(getUrlParam('name') || '课件预览');
+    
+    document.getElementById('coursewareName').textContent = coursewareName;
+    
+    // 存储键名
+    const STORAGE_KEY = 'lms_courseware_' + coursewareId;
+    
+    // 显示加载状态
+    function showLoading(text) {
+      document.getElementById('loadingOverlay').style.display = 'flex';
+      document.getElementById('loadingText').textContent = text || '正在加载...';
+      document.getElementById('errorOverlay').classList.remove('show');
+    }
+    
+    // 显示错误
+    function showError(title, message, details) {
+      document.getElementById('loadingOverlay').style.display = 'none';
+      document.getElementById('errorOverlay').classList.add('show');
+      document.getElementById('errorTitle').textContent = title || '加载失败';
+      document.getElementById('errorMessage').textContent = message || '';
+      document.getElementById('errorDetails').textContent = details || '';
+    }
+    
+    // 隐藏加载
+    function hideLoading() {
+      document.getElementById('loadingOverlay').style.display = 'none';
+    }
+    
+    // 更新进度
+    function updateProgress(text) {
+      document.getElementById('loadingProgress').textContent = text || '';
+    }
+    
+    // 加载并预览课件
+    async function loadCourseware() {
+      if (!coursewareId) {
+        showError('参数错误', '未指定课件ID', '请从课件管理页面点击预览按钮');
+        return;
+      }
+      
+      showLoading('正在读取课件数据...');
+      
+      try {
+        // 从LocalStorage获取课件数据
+        const coursewareData = localStorage.getItem(STORAGE_KEY);
+        
+        if (!coursewareData) {
+          // 尝试从courseware记录中获取
+          const coursewares = JSON.parse(localStorage.getItem('lms_coursewares') || '[]');
+          const cw = coursewares.find(c => c.id === coursewareId);
+          
+          if (!cw || !cw.zipData) {
+            showError('课件未上传', '请先上传ZIP课件包', 
+              '1. 进入"课件管理"页面\n2. 选择对应课程\n3. 上传Storyline导出的ZIP包\n4. 然后再点击预览');
+            return;
+          }
+          
+          await extractAndPreview(cw.zipData, cw.entryFile || 'index.html');
+        } else {
+          const data = JSON.parse(coursewareData);
+          await extractAndPreview(data.zipData, data.entryFile || 'index.html');
+        }
+      } catch (error) {
+        console.error('Load error:', error);
+        showError('加载失败', error.message, error.stack);
+      }
+    }
+    
+    // 解压并预览
+    async function extractAndPreview(zipBase64, entryFile) {
+      showLoading('正在解压课件包...');
+      updateProgress('准备解压文件...');
+      
+      try {
+        // 解码base64
+        updateProgress('解码ZIP数据...');
+        const zipData = atob(zipBase64);
+        const byteArray = new Uint8Array(zipData.length);
+        for (let i = 0; i < zipData.length; i++) {
+          byteArray[i] = zipData.charCodeAt(i);
+        }
+        
+        // 解压
+        updateProgress('正在解压...');
+        const zip = await JSZip.loadAsync(byteArray);
+        
+        // 查找入口文件
+        updateProgress('查找入口文件...');
+        let entryPath = entryFile;
+        
+        // 如果入口文件不存在，尝试查找index.html
+        if (!zip.file(entryPath)) {
+          const indexFile = zip.file('index.html');
+          if (indexFile) {
+            entryPath = 'index.html';
+          } else {
+            // 尝试在子目录中查找
+            const files = Object.keys(zip.files);
+            const htmlFiles = files.filter(f => f.endsWith('.html') && !f.includes('/'));
+            if (htmlFiles.length > 0) {
+              entryPath = htmlFiles[0];
+            }
+          }
+        }
+        
+        const entryZipFile = zip.file(entryPath);
+        if (!entryZipFile) {
+          showError('入口文件不存在', `找不到入口文件: ${entryPath}`, 
+            '可用文件:\n' + Object.keys(zip.files).filter(f => f.endsWith('.html')).join('\n'));
+          return;
+        }
+        
+        // 提取所有文件
+        updateProgress('提取文件资源...');
+        const fileMap = {};
+        const promises = [];
+        
+        zip.forEach((relativePath, file) => {
+          if (!file.dir) {
+            promises.push(
+              file.async('base64').then(content => {
+                // 推断MIME类型
+                const ext = relativePath.split('.').pop().toLowerCase();
+                const mimeTypes = {
+                  'html': 'text/html',
+                  'htm': 'text/html',
+                  'css': 'text/css',
+                  'js': 'application/javascript',
+                  'json': 'application/json',
+                  'png': 'image/png',
+                  'jpg': 'image/jpeg',
+                  'jpeg': 'image/jpeg',
+                  'gif': 'image/gif',
+                  'svg': 'image/svg+xml',
+                  'mp4': 'video/mp4',
+                  'webm': 'video/webm',
+                  'mp3': 'audio/mp3',
+                  'wav': 'audio/wav',
+                  'pdf': 'application/pdf',
+                  'woff': 'font/woff',
+                  'woff2': 'font/woff2',
+                  'ttf': 'font/ttf',
+                  'eot': 'application/vnd.ms-fontobject'
+                };
+                const mimeType = mimeTypes[ext] || 'application/octet-stream';
+                fileMap[relativePath] = {
+                  content: content,
+                  mimeType: mimeType
+                };
+              })
+            );
+          }
+        });
+        
+        await Promise.all(promises);
+        
+        // 创建Blob URL
+        updateProgress('创建预览环境...');
+        const entryContent = fileMap[entryPath].content;
+        const entryMimeType = fileMap[entryPath].mimeType;
+        
+        // 替换内部链接
+        let htmlContent = atob(entryContent);
+        
+        // 替换CSS/JS等资源的引用
+        Object.keys(fileMap).forEach(path => {
+          if (path !== entryPath) {
+            const blob = base64ToBlob(fileMap[path].content, fileMap[path].mimeType);
+            const blobUrl = URL.createObjectURL(blob);
+            htmlContent = htmlContent.replace(new RegExp(path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), blobUrl);
+          }
+        });
+        
+        // 创建最终的HTML Blob
+        const finalBlob = new Blob([htmlContent], { type: entryMimeType });
+        const blobUrl = URL.createObjectURL(finalBlob);
+        
+        // 更新页面信息
+        const fileCount = Object.keys(fileMap).length;
+        document.getElementById('coursewareInfo').textContent = 
+          `📁 ${fileCount} 个文件 | 📝 ${entryPath}`;
+        
+        // 加载iframe
+        hideLoading();
+        document.getElementById('previewIframe').src = blobUrl;
+        
+      } catch (error) {
+        console.error('Extract error:', error);
+        showError('解压失败', error.message, 
+          '可能原因:\n1. ZIP文件损坏\n2. 文件过大\n3. 不支持的压缩格式');
+      }
+    }
+    
+    // Base64转Blob
+    function base64ToBlob(base64, mimeType) {
+      const byteCharacters = atob(base64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      return new Blob([byteArray], { type: mimeType });
+    }
+    
+    // 全屏切换
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    }
+    
+    // 关闭窗口
+    function closeWindow() {
+      if (window.opener) {
+        window.close();
+      } else {
+        window.history.back();
+      }
+    }
+    
+    // 页面加载完成后开始加载课件
+    window.addEventListener('load', loadCourseware);
+  </script>
+</body>
+</html>

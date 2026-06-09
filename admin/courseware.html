@@ -3,102 +3,353 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>课件管理 - 航空培训在线学习平台</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../shared/styles.css">
+  <title>课件管理 - C919系统CBT培训平台</title>
   <style>
-    .upload-zone { border: 2px dashed var(--border-color); border-radius: var(--border-radius-lg); padding: 48px; text-align: center; transition: var(--transition); cursor: pointer; background: var(--bg-primary); }
-    .upload-zone:hover, .upload-zone.dragover { border-color: var(--primary-color); background: var(--primary-bg); }
-    .upload-zone-icon { width: 64px; height: 64px; margin: 0 auto 16px; color: var(--text-secondary); }
-    .upload-progress { margin-top: 16px; display: none; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+      background: #f8fafc;
+    }
+    .page-container { display: flex; min-height: 100vh; }
+    
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: linear-gradient(180deg, #0d3a5e 0%, #1a5fb4 100%);
+      color: white;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      overflow-y: auto;
+    }
+    .sidebar-logo {
+      padding: 24px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .sidebar-logo svg { width: 36px; height: 36px; }
+    .sidebar-logo span { font-size: 16px; font-weight: 600; }
+    .sidebar-nav { padding: 16px 0; }
+    .sidebar-section { margin-bottom: 8px; }
+    .sidebar-title {
+      padding: 8px 20px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: rgba(255,255,255,0.5);
+    }
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .sidebar-link:hover { background: rgba(255,255,255,0.1); color: white; }
+    .sidebar-link.active { background: rgba(255,255,255,0.15); color: white; border-left: 3px solid #4fc3f7; }
+    .sidebar-link svg { width: 20px; height: 20px; }
+    
+    /* Main Content */
+    .main-content { flex: 1; margin-left: 260px; padding: 24px; }
+    .main-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .breadcrumb { font-size: 14px; color: #666; }
+    .breadcrumb a { color: #1a5fb4; text-decoration: none; }
+    .breadcrumb span { margin: 0 8px; color: #ccc; }
+    
+    /* Buttons */
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: #1a5fb4; color: white; }
+    .btn-primary:hover { background: #0d47a1; }
+    .btn-secondary { background: #e2e8f0; color: #2d3748; }
+    .btn-secondary:hover { background: #cbd5e0; }
+    .btn-danger { background: #e53e3e; color: white; }
+    .btn-success { background: #38a169; color: white; }
+    .btn-sm { padding: 6px 12px; font-size: 13px; }
+    
+    /* Card */
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #eee;
+    }
+    .card-title { font-size: 16px; font-weight: 600; }
+    
+    /* Select */
+    select, input {
+      padding: 10px 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    select:focus, input:focus {
+      outline: none;
+      border-color: #1a5fb4;
+      box-shadow: 0 0 0 3px rgba(26,95,180,0.1);
+    }
+    
+    /* Upload Zone */
+    .upload-zone {
+      border: 2px dashed #ddd;
+      border-radius: 12px;
+      padding: 48px;
+      text-align: center;
+      background: #fafafa;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #1a5fb4;
+      background: #e3f2fd;
+    }
+    .upload-zone input { display: none; }
+    .upload-icon { font-size: 48px; margin-bottom: 16px; }
+    .upload-text { color: #666; margin-bottom: 8px; }
+    .upload-hint { font-size: 12px; color: #999; }
+    
+    /* Progress */
+    .upload-progress {
+      margin-top: 16px;
+      display: none;
+    }
     .upload-progress.active { display: block; }
-    .file-info { display: flex; align-items: center; gap: 16px; padding: 16px; background: var(--bg-primary); border-radius: var(--border-radius); margin-top: 16px; }
-    .file-icon { width: 48px; height: 48px; background: var(--primary-bg); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--primary-color); }
-    .courseware-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
-    .courseware-card { background: white; border-radius: var(--border-radius); padding: 20px; box-shadow: var(--shadow-sm); }
+    .progress { height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden; }
+    .progress-bar { height: 100%; background: #1a5fb4; transition: width 0.3s; }
+    .progress-text { margin-top: 8px; font-size: 13px; color: #666; }
+    
+    /* Courseware Grid */
+    .courseware-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+    .courseware-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: all 0.2s;
+    }
+    .courseware-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+    .courseware-card-header {
+      padding: 16px;
+      background: linear-gradient(135deg, #1565c0, #0d47a1);
+      color: white;
+    }
+    .courseware-card-header h4 { font-size: 15px; margin-bottom: 4px; }
+    .courseware-card-body { padding: 16px; }
+    .courseware-info { font-size: 13px; color: #666; margin-bottom: 12px; }
+    .courseware-info p { margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+    .courseware-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    
+    /* Badge */
+    .badge {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .badge-success { background: #c6f6d5; color: #276749; }
+    .badge-primary { background: #bee3f8; color: #2b6cb0; }
+    .badge-warning { background: #fefcbf; color: #975a16; }
+    .badge-secondary { background: #e2e8f0; color: #666; }
+    
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: white;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow: hidden;
+    }
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-title { font-size: 18px; font-weight: 600; }
+    .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #999; }
+    .modal-body { padding: 24px; max-height: 60vh; overflow-y: auto; }
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid #eee;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .form-group small { display: block; margin-top: 6px; color: #999; font-size: 12px; }
+    
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      color: white;
+      font-size: 14px;
+      z-index: 2000;
+      animation: slideIn 0.3s ease;
+    }
+    .toast-success { background: #38a169; }
+    .toast-error { background: #e53e3e; }
+    .toast-warning { background: #dd6b20; }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
   </style>
 </head>
 <body>
   <div class="page-container">
+    <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-logo">
-        <svg width="36" height="36" viewBox="0 0 80 80" fill="none"><rect width="80" height="80" rx="16" fill="rgba(255,255,255,0.2)"/><path d="M40 15L55 35H25L40 15Z" fill="white" opacity="0.9"/><path d="M40 35V55M35 50H45" stroke="white" stroke-width="3" stroke-linecap="round"/></svg>
+        <svg width="36" height="36" viewBox="0 0 80 80" fill="none">
+          <rect width="80" height="80" rx="16" fill="rgba(255,255,255,0.2)"/>
+          <path d="M40 15L55 35H25L40 15Z" fill="white"/>
+          <path d="M40 35V55M35 50H45" stroke="white" stroke-width="3" stroke-linecap="round"/>
+        </svg>
         <span>管理后台</span>
       </div>
       <nav class="sidebar-nav">
-        <div class="sidebar-section"><div class="sidebar-title">概览</div>
-          <a href="dashboard.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>仪表盘</span></a>
+        <div class="sidebar-section">
+          <div class="sidebar-title">概览</div>
+          <a href="dashboard.html" class="sidebar-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            <span>仪表盘</span>
+          </a>
         </div>
-        <div class="sidebar-section"><div class="sidebar-title">学员管理</div>
-          <a href="students.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span>学员管理</span></a>
-          <a href="assignments.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg><span>课程分配</span></a>
+        <div class="sidebar-section">
+          <div class="sidebar-title">学员管理</div>
+          <a href="students.html" class="sidebar-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            <span>学员管理</span>
+          </a>
+          <a href="assignments.html" class="sidebar-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+            <span>课程分配</span>
+          </a>
         </div>
-        <div class="sidebar-section"><div class="sidebar-title">课程管理</div>
-          <a href="courses.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>课程管理</span></a>
-          <a href="courseware.html" class="sidebar-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg><span>课件管理</span></a>
+        <div class="sidebar-section">
+          <div class="sidebar-title">课程管理</div>
+          <a href="courses.html" class="sidebar-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            <span>ATA系统</span>
+          </a>
+          <a href="courseware.html" class="sidebar-link active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            <span>课件上传</span>
+          </a>
         </div>
-        <div class="sidebar-section"><div class="sidebar-title">数据统计</div>
-          <a href="records.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>学习记录</span></a>
-          <a href="reports.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>统计报表</span></a>
+        <div class="sidebar-section">
+          <div class="sidebar-title">数据统计</div>
+          <a href="records.html" class="sidebar-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <span>学习记录</span>
+          </a>
+          <a href="reports.html" class="sidebar-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span>统计报表</span>
+          </a>
         </div>
       </nav>
     </aside>
     
-    <div style="flex:1;margin-left:260px;">
-      <header class="main-header">
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="main-header">
         <div class="breadcrumb">
-          <a href="dashboard.html">首页</a><span>/</span><a href="courses.html">课程管理</a><span>/</span><span id="breadcrumbCourse">选择课程</span>
+          <a href="dashboard.html">首页</a>
+          <span>/</span>
+          <span>课件上传</span>
         </div>
-        <button class="btn btn-primary" onclick="openUploadModal()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          上传课件
-        </button>
-      </header>
+      </div>
       
-      <div style="padding:24px;">
-        <!-- Course Selector -->
-        <div class="card" style="margin-bottom:24px;">
-          <div style="display:flex;align-items:center;gap:16px;">
-            <label style="font-weight:500;">选择课程：</label>
-            <select id="courseSelector" style="flex:1;padding:10px 14px;border:1px solid var(--border-color);border-radius:8px;" onchange="loadCoursewares()">
-              <option value="">-- 请选择课程 --</option>
-            </select>
-          </div>
+      <!-- Course Selector -->
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <label style="font-weight:500;">选择课程：</label>
+          <select id="courseSelector" style="flex:1;" onchange="loadCoursewares()">
+            <option value="">-- 请选择课程 --</option>
+          </select>
         </div>
-        
-        <!-- Upload Zone -->
-        <div class="card" style="margin-bottom:24px;">
-          <h4 style="margin-bottom:16px;">📤 快速上传</h4>
-          <div class="upload-zone" id="uploadZone">
-            <div class="upload-zone-icon">
-              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/>
-                <line x1="12" y1="3" x2="12" y2="15"/>
-              </svg>
-            </div>
-            <h4>拖拽课件包到这里</h4>
-            <p>或点击选择文件 · 支持 ZIP、HTML 格式</p>
-            <p style="margin-top:8px;font-size:12px;color:var(--text-light);">Storyline 导出的 HTML5 课件包（包含 index.html 及相关资源）</p>
-            <input type="file" id="fileInput" accept=".zip,.html" style="display:none;">
-          </div>
-          
-          <div class="upload-progress" id="uploadProgress">
-            <div class="progress" style="height:8px;">
-              <div class="progress-bar" id="progressBar" style="width:0%"></div>
-            </div>
-            <p id="progressText" style="margin-top:8px;font-size:13px;color:var(--text-secondary);">上传中...</p>
-          </div>
+      </div>
+      
+      <!-- Upload Zone -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <h4 style="margin:0;">📤 上传课件</h4>
+          <span style="font-size:13px;color:#999;">支持Storyline导出的HTML5 ZIP包</span>
         </div>
-        
-        <!-- Courseware List -->
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">📚 已上传课件</h3>
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" id="fileInput" accept=".zip" style="display:none;">
+          <div class="upload-icon">📦</div>
+          <div class="upload-text">拖拽ZIP课件包到此处，或点击选择文件</div>
+          <div class="upload-hint">支持 .zip 格式（Storyline导出的HTML5课件包）</div>
+        </div>
+        <div class="upload-progress" id="uploadProgress">
+          <div class="progress">
+            <div class="progress-bar" id="progressBar" style="width:0%"></div>
           </div>
-          <div class="courseware-grid" id="coursewareList">
-            <div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--text-secondary);">请先选择课程</div>
+          <div class="progress-text" id="progressText">上传中...</div>
+        </div>
+      </div>
+      
+      <!-- Courseware List -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">📚 已上传课件</h3>
+        </div>
+        <div class="courseware-grid" id="coursewareList">
+          <div style="grid-column:1/-1;text-align:center;padding:48px;color:#999;">
+            请先选择课程
           </div>
         </div>
       </div>
@@ -115,306 +366,303 @@
       <div class="modal-body">
         <form id="coursewareForm">
           <div class="form-group">
-            <label>所属课程 *</label>
-            <select id="cwCourseId" required>
-              <option value="">选择课程</option>
-            </select>
-          </div>
-          <div class="form-group">
             <label>课件名称 *</label>
             <input type="text" id="cwName" required placeholder="例如：第一章 飞控系统概述">
           </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>课件类型</label>
-              <select id="cwType">
-                <option value="html5">HTML5互动课件</option>
-                <option value="video">视频课件</option>
-                <option value="pdf">PDF文档</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>预计时长（分钟）</label>
-              <input type="number" id="cwDuration" value="60" min="1">
-            </div>
-          </div>
           <div class="form-group">
             <label>入口文件</label>
-            <input type="text" id="cwEntryFile" value="index.html" placeholder="如 index.html, story.html">
-            <small style="color:var(--text-light);">Storyline导出的HTML文件名称，默认为 index.html</small>
+            <input type="text" id="cwEntryFile" value="index.html" placeholder="如 index.html">
+            <small>Storyline导出的HTML入口文件名称</small>
+          </div>
+          <div class="form-group">
+            <label>预计时长（分钟）</label>
+            <input type="number" id="cwDuration" value="30" min="1">
           </div>
         </form>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="closeModal('uploadModal')">取消</button>
-        <button class="btn btn-primary" onclick="createCourseware()">创建记录</button>
+        <button class="btn btn-primary" id="confirmUploadBtn" onclick="confirmUpload()">确认上传</button>
       </div>
     </div>
   </div>
 
-  <!-- Preview Modal -->
-  <div class="modal-overlay" id="previewModal" style="display:none;">
-    <div class="modal" style="max-width:90%;height:90vh;display:flex;flex-direction:column;">
-      <div class="modal-header">
-        <h3 class="modal-title" id="previewTitle">课件预览</h3>
-        <button class="modal-close" onclick="closePreview()">×</button>
-      </div>
-      <div class="modal-body" style="flex:1;padding:0;overflow:hidden;">
-        <iframe id="previewIframe" style="width:100%;height:100%;border:none;" src=""></iframe>
-        <div id="previewPlaceholder" style="display:none;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f5f5f5;">
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="1" style="margin-bottom:16px;">
-            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-            <line x1="8" y1="21" x2="16" y2="21"/>
-            <line x1="12" y1="17" x2="12" y2="21"/>
-          </svg>
-          <p style="font-size:16px;color:#666;margin-bottom:8px;">[ 演示模式 ]</p>
-          <p style="font-size:14px;color:#888;" id="previewPlaceholderText">课件将在此处预览显示</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="../shared/app.js"></script>
   <script>
-    let selectedCourseId = '';
-    let currentPreviewCourseware = null;
+    var selectedCourseId = '';
+    var pendingFile = null; // 待上传的文件
     
     document.addEventListener('DOMContentLoaded', function() {
       LMS.initializeMockData();
-      const user = LMS.Auth.init();
-      if (!user || user.role !== 'admin') { window.location.href = 'login.html'; return; }
-      
-      // 检查URL参数
-      const urlParams = new URLSearchParams(window.location.search);
-      const courseId = urlParams.get('courseId');
+      var user = LMS.Auth.init();
+      if (!user || (user.role !== 'admin' && user.role !== 'super_admin')) { 
+        window.location.href = 'login.html'; 
+        return; 
+      }
       
       loadCourses();
       
-      if (courseId) {
-        document.getElementById('courseSelector').value = courseId;
-        loadCoursewares();
-      }
-      
       // 文件上传交互
-      const uploadZone = document.getElementById('uploadZone');
-      const fileInput = document.getElementById('fileInput');
+      var uploadZone = document.getElementById('uploadZone');
+      var fileInput = document.getElementById('fileInput');
       
-      uploadZone.addEventListener('click', () => fileInput.click());
-      uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
-      uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
-      uploadZone.addEventListener('drop', e => {
+      uploadZone.addEventListener('click', function() { fileInput.click(); });
+      uploadZone.addEventListener('dragover', function(e) { 
+        e.preventDefault(); 
+        uploadZone.classList.add('dragover'); 
+      });
+      uploadZone.addEventListener('dragleave', function() { 
+        uploadZone.classList.remove('dragover'); 
+      });
+      uploadZone.addEventListener('drop', function(e) {
         e.preventDefault();
         uploadZone.classList.remove('dragover');
-        if (e.dataTransfer.files.length) handleFileUpload(e.dataTransfer.files[0]);
+        if (e.dataTransfer.files.length) handleFileSelect(e.dataTransfer.files[0]);
       });
-      fileInput.addEventListener('change', e => { if (e.target.files.length) handleFileUpload(e.target.files[0]); });
+      fileInput.addEventListener('change', function(e) { 
+        if (e.target.files.length) handleFileSelect(e.target.files[0]); 
+      });
     });
     
     function loadCourses() {
-      const courses = LMS.CourseManager.getAll().filter(c => c.status === 'published');
-      const options = courses.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-      document.getElementById('courseSelector').innerHTML = '<option value="">-- 请选择课程 --</option>' + options;
-      document.getElementById('cwCourseId').innerHTML = '<option value="">选择课程</option>' + options;
+      var courses = LMS.CourseManager.getAll() || [];
+      var ataSystems = LMS.ATAManager.getAll() || [];
+      
+      var options = '<option value="">-- 请选择课程 --</option>';
+      
+      // 添加ATA系统
+      ataSystems.forEach(function(s) {
+        options += '<option value="' + s.id + '" data-type="ata">ATA ' + s.ataCode + ' - ' + s.name + '</option>';
+      });
+      
+      // 添加普通课程
+      courses.forEach(function(c) {
+        options += '<option value="' + c.id + '" data-type="course">' + c.name + '</option>';
+      });
+      
+      document.getElementById('courseSelector').innerHTML = options;
     }
     
     function loadCoursewares() {
-      const container = document.getElementById('coursewareList');
+      var container = document.getElementById('coursewareList');
       selectedCourseId = document.getElementById('courseSelector').value;
       
-      const course = LMS.CourseManager.getById(selectedCourseId);
-      document.getElementById('breadcrumbCourse').textContent = course?.name || '选择课程';
-      
       if (!selectedCourseId) {
-        container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--text-secondary);">请先选择课程</div>';
+        container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:#999;">请先选择课程</div>';
         return;
       }
       
-      const coursewares = LMS.CoursewareManager.getByCourse(selectedCourseId);
+      var coursewares = LMS.CoursewareManager.getByCourse(selectedCourseId) || [];
       
       if (coursewares.length === 0) {
-        container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--text-secondary);">该课程暂无课件<br><small style="margin-top:8px;">点击上方"上传课件"按钮添加</small></div>';
+        container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:#999;">该课程暂无课件<br><small style="margin-top:8px;">拖拽ZIP文件到上方区域上传</small></div>';
         return;
       }
       
-      container.innerHTML = coursewares.map(cw => `
-        <div class="courseware-card">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
-            <div>
-              <h4 style="margin-bottom:4px;">${cw.name}</h4>
-              <span class="badge ${cw.status === 'published' ? 'badge-success' : 'badge-secondary'}">${cw.status === 'published' ? '已发布' : '草稿'}</span>
-            </div>
-            <span class="badge badge-primary">${(cw.type || 'html5').toUpperCase()}</span>
-          </div>
-          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">
-            <p>📁 文件：${cw.fileName || '未指定'}</p>
-            <p>📝 入口：${cw.entryFile || 'index.html'}</p>
-            <p>⏱️ 时长：约${cw.duration || 30}分钟</p>
-            <p>📤 上传时间：${LMS.UI.formatDate(cw.uploadedAt || cw.createdAt)}</p>
-          </div>
-          <div style="display:flex;gap:8px;">
-            <button class="btn btn-primary btn-sm" onclick="previewCourseware('${cw.id}')">预览</button>
-            <button class="btn btn-secondary btn-sm" onclick="toggleCoursewareStatus('${cw.id}')">${cw.status === 'published' ? '下架' : '发布'}</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteCourseware('${cw.id}')">删除</button>
-          </div>
-        </div>
-      `).join('');
-    }
-    
-    function handleFileUpload(file) {
-      const courseId = document.getElementById('courseSelector').value;
-      if (!courseId) {
-        LMS.UI.toast('请先选择所属课程', 'warning');
-        return;
-      }
-      
-      const progress = document.getElementById('uploadProgress');
-      const progressBar = document.getElementById('progressBar');
-      const progressText = document.getElementById('progressText');
-      
-      progress.classList.add('active');
-      progressText.textContent = `正在上传：${file.name}`;
-      
-      // 模拟上传进度
-      let percent = 0;
-      const interval = setInterval(() => {
-        percent += Math.random() * 30;
-        if (percent >= 100) {
-          percent = 100;
-          clearInterval(interval);
-          progressText.textContent = '上传完成！';
-          
-          // 创建课件记录
-          const course = LMS.CourseManager.getById(courseId);
-          const fileName = file.name.replace(/\.(zip|html)$/i, '');
-          
-          LMS.CoursewareManager.upload({
-            courseId,
-            courseName: course.name,
-            name: fileName,
-            type: file.name.endsWith('.html') ? 'html5' : 'html5',
-            entryFile: 'index.html',
-            duration: 30,
-            chapters: [{ id: 1, title: '默认章节', duration: 30 }]
-          }, file);
-          
-          setTimeout(() => {
-            progress.classList.remove('active');
-            progressBar.style.width = '0%';
-            LMS.UI.toast('课件上传成功', 'success');
-            loadCoursewares();
-          }, 500);
-        }
-        progressBar.style.width = percent + '%';
-      }, 200);
-    }
-    
-    function openUploadModal() {
-      const courseId = document.getElementById('courseSelector').value;
-      if (!courseId) {
-        LMS.UI.toast('请先选择课程', 'warning');
-        return;
-      }
-      document.getElementById('cwCourseId').value = courseId;
-      LMS.UI.openModal('uploadModal');
-    }
-    
-    function createCourseware() {
-      const courseId = document.getElementById('cwCourseId').value;
-      const name = document.getElementById('cwName').value.trim();
-      
-      if (!courseId || !name) {
-        LMS.UI.toast('请填写必填项', 'error');
-        return;
-      }
-      
-      const course = LMS.CourseManager.getById(courseId);
-      LMS.CoursewareManager.upload({
-        courseId,
-        courseName: course.name,
-        name,
-        type: document.getElementById('cwType').value,
-        duration: parseInt(document.getElementById('cwDuration').value) || 60,
-        entryFile: document.getElementById('cwEntryFile').value || 'index.html',
-        chapters: [{ id: 1, title: '第一章', duration: 30 }]
-      }, { name: name + '.zip', size: 0 });
-      
-      closeModal('uploadModal');
-      loadCoursewares();
-      LMS.UI.toast('课件创建成功', 'success');
-    }
-    
-    function previewCourseware(id) {
-      currentPreviewCourseware = LMS.CoursewareManager.getById(id);
-      if (!currentPreviewCourseware) {
-        showToast('课件不存在', 'error');
-        return;
-      }
-      
-      // 显示预览Modal
-      document.getElementById('previewModal').style.display = 'flex';
-      document.getElementById('previewTitle').textContent = '预览：' + currentPreviewCourseware.name;
-      
-      var iframe = document.getElementById('previewIframe');
-      var placeholder = document.getElementById('previewPlaceholder');
-      
-      // 检查是否有课件URL
-      if (currentPreviewCourseware.url) {
-        iframe.src = currentPreviewCourseware.url;
-        iframe.style.display = 'block';
-        placeholder.style.display = 'none';
-      } else {
-        // 显示说明
-        iframe.style.display = 'none';
-        placeholder.style.display = 'flex';
+      container.innerHTML = coursewares.map(function(cw) {
+        var hasZip = cw.zipData ? true : false;
+        var statusClass = cw.status === 'published' ? 'badge-success' : 'badge-secondary';
+        var statusText = cw.status === 'published' ? '已发布' : '草稿';
+        var uploadedDate = cw.uploadedAt ? new Date(cw.uploadedAt).toLocaleDateString() : '-';
         
-        var entryFile = currentPreviewCourseware.entryFile || 'index.html';
-        var fileName = currentPreviewCourseware.fileName || entryFile;
-        
-        placeholder.innerHTML = '<div style="text-align:center;max-width:500px;">' +
-          '<div style="font-size:64px;margin-bottom:16px;">📖</div>' +
-          '<h3 style="color:#333;margin-bottom:16px;">' + currentPreviewCourseware.name + '</h3>' +
-          '<div style="background:#e3f2fd;padding:20px;border-radius:12px;text-align:left;margin-bottom:16px;">' +
-            '<p style="color:#1565c0;margin-bottom:8px;"><strong>📁 课件信息</strong></p>' +
-            '<p style="color:#666;font-size:14px;margin-bottom:4px;">• 文件名：' + fileName + '</p>' +
-            '<p style="color:#666;font-size:14px;margin-bottom:4px;">• 入口文件：' + entryFile + '</p>' +
-            '<p style="color:#666;font-size:14px;margin-bottom:4px;">• 预计时长：' + (currentPreviewCourseware.duration || 30) + ' 分钟</p>' +
-            '<p style="color:#666;font-size:14px;">• 课件类型：' + ((currentPreviewCourseware.type === 'html5') ? 'HTML5互动课件' : currentPreviewCourseware.type) + '</p>' +
+        return '<div class="courseware-card">' +
+          '<div class="courseware-card-header">' +
+            '<h4>' + cw.name + '</h4>' +
           '</div>' +
-          '<div style="background:#fff3cd;padding:16px;border-radius:8px;text-align:left;">' +
-            '<p style="color:#856404;font-size:13px;"><strong>⚠️ 预览说明</strong></p>' +
-            '<p style="color:#856404;font-size:13px;margin-top:8px;">由于当前是纯前端演示模式，课件文件存储在本地浏览器中，无法直接在网页中嵌入预览。</p>' +
-            '<p style="color:#856404;font-size:13px;margin-top:8px;">实际使用时，请通过以下方式预览：</p>' +
-            '<p style="color:#856404;font-size:13px;margin-top:8px;">1. 部署到服务器后，在"课件上传"页面点击"预览"按钮</p>' +
-            '<p style="color:#856404;font-size:13px;margin-top:4px;">2. 学员端进入课程学习页面后自动播放</p>' +
-            '<p style="color:#856404;font-size:13px;margin-top:4px;">3. 下载ZIP包到本地，使用浏览器打开 index.html 预览</p>' +
+          '<div class="courseware-card-body">' +
+            '<div class="courseware-info">' +
+              '<p>📁 文件：' + (cw.fileName || '未指定') + '</p>' +
+              '<p>📝 入口：' + (cw.entryFile || 'index.html') + '</p>' +
+              '<p>⏱️ 时长：约' + (cw.duration || 30) + '分钟</p>' +
+              '<p>📤 上传：' + uploadedDate + '</p>' +
+            '</div>' +
+            '<div style="margin-bottom:12px;">' +
+              '<span class="badge ' + statusClass + '">' + statusText + '</span>' +
+              (hasZip ? '<span class="badge badge-primary" style="margin-left:8px;">📦 已存储</span>' : '') +
+            '</div>' +
+            '<div class="courseware-actions">' +
+              '<button class="btn btn-primary btn-sm" onclick="previewCourseware(\'' + cw.id + '\', \'' + encodeURIComponent(cw.name) + '\')">' +
+                '👁️ 预览' +
+              '</button>' +
+              '<button class="btn btn-secondary btn-sm" onclick="toggleStatus(\'' + cw.id + '\')">' +
+                (cw.status === 'published' ? '下架' : '发布') +
+              '</button>' +
+              '<button class="btn btn-danger btn-sm" onclick="deleteCourseware(\'' + cw.id + '\')">' +
+                '🗑️ 删除' +
+              '</button>' +
+            '</div>' +
           '</div>' +
         '</div>';
+      }).join('');
+    }
+    
+    function handleFileSelect(file) {
+      if (!selectedCourseId) {
+        showToast('请先选择所属课程', 'warning');
+        return;
       }
+      
+      if (!file.name.toLowerCase().endsWith('.zip')) {
+        showToast('请上传ZIP格式的课件包', 'error');
+        return;
+      }
+      
+      // 保存文件引用，打开上传确认弹窗
+      pendingFile = file;
+      document.getElementById('cwName').value = file.name.replace(/\.zip$/i, '');
+      document.getElementById('uploadModal').classList.add('active');
     }
     
-    function closePreview() {
-      document.getElementById('previewModal').style.display = 'none';
-      document.getElementById('previewIframe').src = '';
-      currentPreviewCourseware = null;
+    function confirmUpload() {
+      var name = document.getElementById('cwName').value.trim();
+      var entryFile = document.getElementById('cwEntryFile').value.trim() || 'index.html';
+      var duration = parseInt(document.getElementById('cwDuration').value) || 30;
+      
+      if (!name) {
+        showToast('请输入课件名称', 'error');
+        return;
+      }
+      
+      if (!pendingFile) {
+        showToast('请选择文件', 'error');
+        return;
+      }
+      
+      // 关闭弹窗，开始上传
+      closeModal('uploadModal');
+      uploadFile(pendingFile, name, entryFile, duration);
     }
     
-    function toggleCoursewareStatus(id) {
-      const cw = LMS.CoursewareManager.getById(id);
-      const newStatus = cw.status === 'published' ? 'draft' : 'published';
-      LMS.CoursewareManager.update(id, { status: newStatus });
-      loadCoursewares();
-      LMS.UI.toast('状态已更新为：' + (newStatus === 'published' ? '已发布' : '草稿'), 'success');
+    function uploadFile(file, name, entryFile, duration) {
+      var progress = document.getElementById('uploadProgress');
+      var progressBar = document.getElementById('progressBar');
+      var progressText = document.getElementById('progressText');
+      
+      progress.classList.add('active');
+      progressText.textContent = '正在读取文件...';
+      progressBar.style.width = '10%';
+      
+      var reader = new FileReader();
+      
+      reader.onprogress = function(e) {
+        if (e.lengthComputable) {
+          var percent = Math.round((e.loaded / e.total) * 50);
+          progressBar.style.width = percent + '%';
+          progressText.textContent = '读取文件中... ' + percent + '%';
+        }
+      };
+      
+      reader.onload = function(e) {
+        progressText.textContent = '正在保存数据...';
+        progressBar.style.width = '60%';
+        
+        try {
+          // 将文件转换为base64存储
+          var arrayBuffer = e.target.result;
+          var base64 = btoa(String.fromCharCode.apply(null, new Uint8Array(arrayBuffer)));
+          
+          progressBar.style.width = '80%';
+          progressText.textContent = '正在创建课件记录...';
+          
+          // 获取课程信息
+          var courseName = '';
+          var ataSystems = LMS.ATAManager.getAll() || [];
+          var courses = LMS.CourseManager.getAll() || [];
+          
+          var course = ataSystems.find(function(s) { return s.id === selectedCourseId; });
+          if (!course) {
+            course = courses.find(function(c) { return c.id === selectedCourseId; });
+          }
+          if (course) courseName = course.name;
+          
+          // 创建课件记录
+          var courseware = {
+            id: 'cw_' + Date.now(),
+            courseId: selectedCourseId,
+            courseName: courseName,
+            name: name,
+            fileName: file.name,
+            entryFile: entryFile,
+            duration: duration,
+            status: 'published',
+            zipData: base64, // 存储base64数据
+            uploadedAt: new Date().toISOString()
+          };
+          
+          // 保存到存储
+          var coursewares = JSON.parse(localStorage.getItem('lms_coursewares') || '[]');
+          coursewares.push(courseware);
+          localStorage.setItem('lms_coursewares', JSON.stringify(coursewares));
+          
+          progressBar.style.width = '100%';
+          progressText.textContent = '上传完成！';
+          
+          setTimeout(function() {
+            progress.classList.remove('active');
+            progressBar.style.width = '0%';
+            showToast('课件上传成功！可以点击"预览"查看了', 'success');
+            pendingFile = null;
+            loadCoursewares();
+          }, 500);
+          
+        } catch (error) {
+          console.error('Upload error:', error);
+          progress.classList.remove('active');
+          showToast('上传失败：' + error.message, 'error');
+        }
+      };
+      
+      reader.onerror = function() {
+        progress.classList.remove('active');
+        showToast('文件读取失败', 'error');
+      };
+      
+      reader.readAsArrayBuffer(file);
+    }
+    
+    function previewCourseware(id, name) {
+      // 打开预览页面
+      var previewUrl = '../preview.html?id=' + id + '&name=' + (name || '');
+      window.open(previewUrl, '_blank', 'width=1200,height=800,scrollbars=yes');
+    }
+    
+    function toggleStatus(id) {
+      var coursewares = JSON.parse(localStorage.getItem('lms_coursewares') || '[]');
+      var cw = coursewares.find(function(c) { return c.id === id; });
+      if (cw) {
+        cw.status = cw.status === 'published' ? 'draft' : 'published';
+        localStorage.setItem('lms_coursewares', JSON.stringify(coursewares));
+        showToast('状态已更新', 'success');
+        loadCoursewares();
+      }
     }
     
     function deleteCourseware(id) {
-      if (confirm('确定要删除这个课件吗？')) {
-        LMS.CoursewareManager.delete(id);
-        loadCoursewares();
-        LMS.UI.toast('课件已删除', 'success');
-      }
+      if (!confirm('确定要删除这个课件吗？')) return;
+      
+      var coursewares = JSON.parse(localStorage.getItem('lms_coursewares') || '[]');
+      coursewares = coursewares.filter(function(c) { return c.id !== id; });
+      localStorage.setItem('lms_coursewares', JSON.stringify(coursewares));
+      
+      // 也要删除预览用的数据
+      localStorage.removeItem('lms_courseware_' + id);
+      
+      showToast('课件已删除', 'success');
+      loadCoursewares();
     }
     
-    function closeModal(id) { LMS.UI.closeModal(id); }
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+    
+    function showToast(message, type) {
+      var toast = document.createElement('div');
+      toast.className = 'toast toast-' + (type || 'success');
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(function() { toast.remove(); }, 3000);
+    }
   </script>
 </body>
 </html>
