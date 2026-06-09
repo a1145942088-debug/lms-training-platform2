@@ -82,7 +82,6 @@
     .btn-secondary { background: #e2e8f0; color: #2d3748; }
     .btn-secondary:hover { background: #cbd5e0; }
     .btn-danger { background: #e53e3e; color: white; }
-    .btn-success { background: #38a169; color: white; }
     .btn-sm { padding: 6px 12px; font-size: 13px; }
     
     /* Card */
@@ -130,6 +129,10 @@
       border-color: #1a5fb4;
       background: #e3f2fd;
     }
+    .upload-zone.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
     .upload-zone input { display: none; }
     .upload-icon { font-size: 48px; margin-bottom: 16px; }
     .upload-text { color: #666; margin-bottom: 8px; }
@@ -144,6 +147,25 @@
     .progress { height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden; }
     .progress-bar { height: 100%; background: #1a5fb4; transition: width 0.3s; }
     .progress-text { margin-top: 8px; font-size: 13px; color: #666; }
+    
+    /* Storage Mode */
+    .storage-mode {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .storage-mode.local {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .storage-mode.cloud {
+      background: #d1fae5;
+      color: #065f46;
+    }
     
     /* Courseware Grid */
     .courseware-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
@@ -177,6 +199,26 @@
     .badge-primary { background: #bee3f8; color: #2b6cb0; }
     .badge-warning { background: #fefcbf; color: #975a16; }
     .badge-secondary { background: #e2e8f0; color: #666; }
+    
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      color: white;
+      font-size: 14px;
+      z-index: 2000;
+      animation: slideIn 0.3s ease;
+    }
+    .toast-success { background: #38a169; }
+    .toast-error { background: #e53e3e; }
+    .toast-warning { background: #dd6b20; }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
     
     /* Modal */
     .modal-overlay {
@@ -225,24 +267,22 @@
     }
     .form-group small { display: block; margin-top: 6px; color: #999; font-size: 12px; }
     
-    /* Toast */
-    .toast {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      padding: 12px 24px;
+    /* OSS Config Notice */
+    .oss-notice {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
       border-radius: 8px;
-      color: white;
+      padding: 16px;
+      margin-bottom: 20px;
       font-size: 14px;
-      z-index: 2000;
-      animation: slideIn 0.3s ease;
     }
-    .toast-success { background: #38a169; }
-    .toast-error { background: #e53e3e; }
-    .toast-warning { background: #dd6b20; }
-    @keyframes slideIn {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
+    .oss-notice h4 { color: #856404; margin-bottom: 8px; }
+    .oss-notice p { color: #856404; margin-bottom: 4px; }
+    .oss-notice code {
+      background: #fff;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
     }
   </style>
 </head>
@@ -310,6 +350,17 @@
           <span>/</span>
           <span>课件上传</span>
         </div>
+        <div id="storageMode" class="storage-mode local">
+          💾 本地存储模式
+        </div>
+      </div>
+      
+      <!-- OSS Config Notice -->
+      <div class="oss-notice" id="ossNotice">
+        <h4>⚠️ 大文件存储提示</h4>
+        <p>当前为本地存储模式，仅支持 <5MB 的小文件预览。</p>
+        <p>如需支持大文件课件（>5MB），请配置阿里云OSS云存储。</p>
+        <p style="margin-top:12px;">配置方法：查看 <code>OSS_SETUP.md</code> 文件，按步骤配置即可。</p>
       </div>
       
       <!-- Course Selector -->
@@ -382,7 +433,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="closeModal('uploadModal')">取消</button>
-        <button class="btn btn-primary" id="confirmUploadBtn" onclick="confirmUpload()">确认上传</button>
+        <button class="btn btn-primary" onclick="confirmUpload()">确认上传</button>
       </div>
     </div>
   </div>
@@ -391,7 +442,8 @@
   <script src="../shared/app.js"></script>
   <script>
     var selectedCourseId = '';
-    var pendingFile = null; // 待上传的文件
+    var pendingFile = null;
+    var uploadMode = 'local'; // 'local' 或 'cloud'
     
     document.addEventListener('DOMContentLoaded', function() {
       LMS.initializeMockData();
@@ -401,6 +453,8 @@
         return; 
       }
       
+      // 检查是否有API可用
+      checkUploadMode();
       loadCourses();
       
       // 文件上传交互
@@ -425,18 +479,38 @@
       });
     });
     
+    // 检查上传模式
+    function checkUploadMode() {
+      // 尝试调用API检查模式
+      fetch('/api/upload-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ test: true })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.mode === 'oss') {
+          uploadMode = 'cloud';
+          document.getElementById('storageMode').className = 'storage-mode cloud';
+          document.getElementById('storageMode').textContent = '☁️ 云存储模式';
+          document.getElementById('ossNotice').style.display = 'none';
+        }
+      })
+      .catch(function() {
+        // API不可用，保持本地模式
+      });
+    }
+    
     function loadCourses() {
       var courses = LMS.CourseManager.getAll() || [];
       var ataSystems = LMS.ATAManager.getAll() || [];
       
       var options = '<option value="">-- 请选择课程 --</option>';
       
-      // 添加ATA系统
       ataSystems.forEach(function(s) {
         options += '<option value="' + s.id + '" data-type="ata">ATA ' + s.ataCode + ' - ' + s.name + '</option>';
       });
       
-      // 添加普通课程
       courses.forEach(function(c) {
         options += '<option value="' + c.id + '" data-type="course">' + c.name + '</option>';
       });
@@ -462,6 +536,7 @@
       
       container.innerHTML = coursewares.map(function(cw) {
         var hasZip = cw.zipData ? true : false;
+        var hasUrl = cw.url ? true : false;
         var statusClass = cw.status === 'published' ? 'badge-success' : 'badge-secondary';
         var statusText = cw.status === 'published' ? '已发布' : '草稿';
         var uploadedDate = cw.uploadedAt ? new Date(cw.uploadedAt).toLocaleDateString() : '-';
@@ -479,7 +554,8 @@
             '</div>' +
             '<div style="margin-bottom:12px;">' +
               '<span class="badge ' + statusClass + '">' + statusText + '</span>' +
-              (hasZip ? '<span class="badge badge-primary" style="margin-left:8px;">📦 已存储</span>' : '') +
+              (hasZip ? '<span class="badge badge-primary" style="margin-left:8px;">💾 本地</span>' : '') +
+              (hasUrl ? '<span class="badge badge-success" style="margin-left:8px;">☁️ 云端</span>' : '') +
             '</div>' +
             '<div class="courseware-actions">' +
               '<button class="btn btn-primary btn-sm" onclick="previewCourseware(\'' + cw.id + '\', \'' + encodeURIComponent(cw.name) + '\')">' +
@@ -508,7 +584,6 @@
         return;
       }
       
-      // 保存文件引用，打开上传确认弹窗
       pendingFile = file;
       document.getElementById('cwName').value = file.name.replace(/\.zip$/i, '');
       document.getElementById('uploadModal').classList.add('active');
@@ -529,7 +604,6 @@
         return;
       }
       
-      // 关闭弹窗，开始上传
       closeModal('uploadModal');
       uploadFile(pendingFile, name, entryFile, duration);
     }
@@ -540,8 +614,122 @@
       var progressText = document.getElementById('progressText');
       
       progress.classList.add('active');
-      progressText.textContent = '正在读取文件...';
+      progressText.textContent = '准备上传...';
       progressBar.style.width = '10%';
+      
+      // 根据文件大小选择上传方式
+      var fileSize = file.size;
+      var LOCAL_SIZE_LIMIT = 3 * 1024 * 1024; // 3MB
+      
+      if (uploadMode === 'cloud' || fileSize > LOCAL_SIZE_LIMIT) {
+        // 使用云端上传
+        uploadToCloud(file, name, entryFile, duration, progress, progressBar, progressText);
+      } else {
+        // 使用本地存储
+        uploadToLocal(file, name, entryFile, duration, progress, progressBar, progressText);
+      }
+    }
+    
+    // 云端上传（通过API）
+    function uploadToCloud(file, name, entryFile, duration, progress, progressBar, progressText) {
+      progressText.textContent = '正在读取文件...';
+      progressBar.style.width = '20%';
+      
+      var reader = new FileReader();
+      
+      reader.onprogress = function(e) {
+        if (e.lengthComputable) {
+          var percent = Math.round((e.loaded / e.total) * 30);
+          progressBar.style.width = (20 + percent) + '%';
+          progressText.textContent = '读取文件中... ' + Math.round(e.loaded / e.total * 100) + '%';
+        }
+      };
+      
+      reader.onload = function(e) {
+        progressText.textContent = '正在上传到云端...';
+        progressBar.style.width = '50%';
+        
+        // 获取课程信息
+        var courseName = '';
+        var ataSystems = LMS.ATAManager.getAll() || [];
+        var courses = LMS.CourseManager.getAll() || [];
+        
+        var course = ataSystems.find(function(s) { return s.id === selectedCourseId; });
+        if (!course) {
+          course = courses.find(function(c) { return c.id === selectedCourseId; });
+        }
+        if (course) courseName = course.name;
+        
+        // 将文件转为Base64
+        var arrayBuffer = e.target.result;
+        var base64 = arrayBufferToBase64(arrayBuffer);
+        
+        progressBar.style.width = '70%';
+        progressText.textContent = '正在保存记录...';
+        
+        // 调用API上传
+        fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fileName: file.name,
+            courseId: selectedCourseId,
+            courseName: courseName,
+            entryFile: entryFile,
+            duration: duration,
+            zipData: base64
+          })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          progressBar.style.width = '90%';
+          
+          // 保存到本地记录
+          var coursewares = JSON.parse(localStorage.getItem('lms_coursewares') || '[]');
+          coursewares.push({
+            id: data.fileId || ('cw_' + Date.now()),
+            courseId: selectedCourseId,
+            courseName: courseName,
+            name: name,
+            fileName: file.name,
+            entryFile: entryFile,
+            duration: duration,
+            status: 'published',
+            url: data.url || '',
+            zipData: data.mode === 'demo' ? base64 : '',
+            uploadedAt: new Date().toISOString()
+          });
+          localStorage.setItem('lms_coursewares', JSON.stringify(coursewares));
+          
+          progressBar.style.width = '100%';
+          progressText.textContent = '上传完成！';
+          
+          setTimeout(function() {
+            progress.classList.remove('active');
+            progressBar.style.width = '0%';
+            showToast(data.message || '课件上传成功！', 'success');
+            pendingFile = null;
+            loadCoursewares();
+          }, 500);
+        })
+        .catch(function(error) {
+          console.error('Upload error:', error);
+          progress.classList.remove('active');
+          showToast('上传失败：' + error.message, 'error');
+        });
+      };
+      
+      reader.onerror = function() {
+        progress.classList.remove('active');
+        showToast('文件读取失败', 'error');
+      };
+      
+      reader.readAsArrayBuffer(file);
+    }
+    
+    // 本地上传（LocalStorage）
+    function uploadToLocal(file, name, entryFile, duration, progress, progressBar, progressText) {
+      progressText.textContent = '正在读取文件...';
       
       var reader = new FileReader();
       
@@ -549,21 +737,20 @@
         if (e.lengthComputable) {
           var percent = Math.round((e.loaded / e.total) * 50);
           progressBar.style.width = percent + '%';
-          progressText.textContent = '读取文件中... ' + percent + '%';
+          progressText.textContent = '处理中... ' + percent + '%';
         }
       };
       
       reader.onload = function(e) {
-        progressText.textContent = '正在保存数据...';
-        progressBar.style.width = '60%';
+        progressText.textContent = '正在保存...';
+        progressBar.style.width = '70%';
         
         try {
-          // 将文件转换为base64存储
           var arrayBuffer = e.target.result;
-          var base64 = btoa(String.fromCharCode.apply(null, new Uint8Array(arrayBuffer)));
+          var base64 = arrayBufferToBase64(arrayBuffer);
           
-          progressBar.style.width = '80%';
-          progressText.textContent = '正在创建课件记录...';
+          progressBar.style.width = '85%';
+          progressText.textContent = '创建记录...';
           
           // 获取课程信息
           var courseName = '';
@@ -576,8 +763,9 @@
           }
           if (course) courseName = course.name;
           
-          // 创建课件记录
-          var courseware = {
+          // 保存课件记录
+          var coursewares = JSON.parse(localStorage.getItem('lms_coursewares') || '[]');
+          coursewares.push({
             id: 'cw_' + Date.now(),
             courseId: selectedCourseId,
             courseName: courseName,
@@ -586,13 +774,10 @@
             entryFile: entryFile,
             duration: duration,
             status: 'published',
-            zipData: base64, // 存储base64数据
+            zipData: base64,
+            fileSize: file.size,
             uploadedAt: new Date().toISOString()
-          };
-          
-          // 保存到存储
-          var coursewares = JSON.parse(localStorage.getItem('lms_coursewares') || '[]');
-          coursewares.push(courseware);
+          });
           localStorage.setItem('lms_coursewares', JSON.stringify(coursewares));
           
           progressBar.style.width = '100%';
@@ -621,8 +806,35 @@
       reader.readAsArrayBuffer(file);
     }
     
+    // ArrayBuffer转Base64（分块处理）
+    function arrayBufferToBase64(buffer) {
+      var bytes = new Uint8Array(buffer);
+      var len = bytes.length;
+      var binary = '';
+      var chunkSize = 8192;
+      for (var offset = 0; offset < len; offset += chunkSize) {
+        var chunk = bytes.subarray(offset, Math.min(offset + chunkSize, len));
+        binary += String.fromCharCode.apply(null, chunk);
+      }
+      return btoa(binary);
+    }
+    
     function previewCourseware(id, name) {
-      // 打开预览页面
+      var coursewares = JSON.parse(localStorage.getItem('lms_coursewares') || '[]');
+      var cw = coursewares.find(function(c) { return c.id === id; });
+      
+      if (!cw) {
+        showToast('课件不存在', 'error');
+        return;
+      }
+      
+      // 优先使用URL（云端）
+      if (cw.url) {
+        window.open(cw.url, '_blank');
+        return;
+      }
+      
+      // 使用本地预览
       var previewUrl = '../preview.html?id=' + id + '&name=' + (name || '');
       window.open(previewUrl, '_blank', 'width=1200,height=800,scrollbars=yes');
     }
@@ -644,9 +856,6 @@
       var coursewares = JSON.parse(localStorage.getItem('lms_coursewares') || '[]');
       coursewares = coursewares.filter(function(c) { return c.id !== id; });
       localStorage.setItem('lms_coursewares', JSON.stringify(coursewares));
-      
-      // 也要删除预览用的数据
-      localStorage.removeItem('lms_courseware_' + id);
       
       showToast('课件已删除', 'success');
       loadCoursewares();

@@ -1,0 +1,12 @@
+{
+  "name": "lms-cbt-platform",
+  "version": "2.0.0",
+  "description": "C919系统CBT培训平台 - 支持大文件存储",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "ali-oss": "^6.20.0"
+  }
+}

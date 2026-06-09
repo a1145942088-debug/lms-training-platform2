@@ -72,6 +72,7 @@
       justify-content: center;
       z-index: 10;
     }
+    .loading-overlay.hidden { display: none; }
     .loading-spinner {
       width: 60px;
       height: 60px;
@@ -118,6 +119,24 @@
       max-width: 500px;
       text-align: left;
     }
+    .source-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      z-index: 5;
+    }
+    .source-badge.cloud {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    .source-badge.local {
+      background: #fef3c7;
+      color: #92400e;
+    }
   </style>
 </head>
 <body>
@@ -137,6 +156,8 @@
   </div>
   
   <div class="preview-content">
+    <div class="source-badge local" id="sourceBadge">💾 本地模式</div>
+    
     <div class="loading-overlay" id="loadingOverlay">
       <div class="loading-spinner"></div>
       <div class="loading-text" id="loadingText">正在加载课件...</div>
@@ -150,7 +171,7 @@
       <div class="error-details" id="errorDetails"></div>
     </div>
     
-    <iframe class="preview-iframe" id="previewIframe" sandbox="allow-scripts allow-same-origin"></iframe>
+    <iframe class="preview-iframe" id="previewIframe" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
   </div>
 
   <!-- JSZip库 -->
@@ -163,42 +184,44 @@
       return params.get(name);
     }
     
-    // 获取courseware ID
     const coursewareId = getUrlParam('id');
-    const coursewareName = decodeURIComponent(getUrlParam('name') || '课件预览');
+    let courseName = decodeURIComponent(getUrlParam('name') || '课件预览');
     
-    document.getElementById('coursewareName').textContent = coursewareName;
+    document.getElementById('coursewareName').textContent = courseName;
     
-    // 存储键名
-    const STORAGE_KEY = 'lms_courseware_' + coursewareId;
-    
-    // 显示加载状态
     function showLoading(text) {
-      document.getElementById('loadingOverlay').style.display = 'flex';
+      document.getElementById('loadingOverlay').classList.remove('hidden');
       document.getElementById('loadingText').textContent = text || '正在加载...';
       document.getElementById('errorOverlay').classList.remove('show');
     }
     
-    // 显示错误
+    function hideLoading() {
+      document.getElementById('loadingOverlay').classList.add('hidden');
+    }
+    
     function showError(title, message, details) {
-      document.getElementById('loadingOverlay').style.display = 'none';
+      hideLoading();
       document.getElementById('errorOverlay').classList.add('show');
       document.getElementById('errorTitle').textContent = title || '加载失败';
       document.getElementById('errorMessage').textContent = message || '';
       document.getElementById('errorDetails').textContent = details || '';
     }
     
-    // 隐藏加载
-    function hideLoading() {
-      document.getElementById('loadingOverlay').style.display = 'none';
-    }
-    
-    // 更新进度
     function updateProgress(text) {
       document.getElementById('loadingProgress').textContent = text || '';
     }
     
-    // 加载并预览课件
+    function setSourceBadge(mode) {
+      const badge = document.getElementById('sourceBadge');
+      if (mode === 'cloud') {
+        badge.className = 'source-badge cloud';
+        badge.textContent = '☁️ 云端模式';
+      } else {
+        badge.className = 'source-badge local';
+        badge.textContent = '💾 本地模式';
+      }
+    }
+    
     async function loadCourseware() {
       if (!coursewareId) {
         showError('参数错误', '未指定课件ID', '请从课件管理页面点击预览按钮');
@@ -209,27 +232,61 @@
       
       try {
         // 从LocalStorage获取课件数据
-        const coursewareData = localStorage.getItem(STORAGE_KEY);
+        const coursewares = JSON.parse(localStorage.getItem('lms_coursewares') || '[]');
+        const cw = coursewares.find(c => c.id === coursewareId);
         
-        if (!coursewareData) {
-          // 尝试从courseware记录中获取
-          const coursewares = JSON.parse(localStorage.getItem('lms_coursewares') || '[]');
-          const cw = coursewares.find(c => c.id === coursewareId);
-          
-          if (!cw || !cw.zipData) {
-            showError('课件未上传', '请先上传ZIP课件包', 
-              '1. 进入"课件管理"页面\n2. 选择对应课程\n3. 上传Storyline导出的ZIP包\n4. 然后再点击预览');
-            return;
-          }
-          
+        if (!cw) {
+          showError('课件不存在', '请检查课件ID是否正确', '可能原因：课件已被删除或尚未上传');
+          return;
+        }
+        
+        courseName = cw.name;
+        document.getElementById('coursewareName').textContent = cw.name;
+        document.getElementById('coursewareInfo').textContent = 
+          '📁 ' + (cw.fileName || '未知') + ' | 📝 ' + (cw.entryFile || 'index.html');
+        
+        // 优先使用云端URL
+        if (cw.url) {
+          setSourceBadge('cloud');
+          await loadFromCloud(cw.url, cw.entryFile);
+          return;
+        }
+        
+        // 本地模式：使用Base64数据
+        setSourceBadge('local');
+        if (cw.zipData && cw.zipData.length > 100) {
           await extractAndPreview(cw.zipData, cw.entryFile || 'index.html');
         } else {
-          const data = JSON.parse(coursewareData);
-          await extractAndPreview(data.zipData, data.entryFile || 'index.html');
+          showError('课件文件未存储', '无法加载预览数据', 
+            '可能原因：\n1. 文件较大（>5MB），浏览器存储空间不足\n2. 上传时未完整保存\n\n建议：配置阿里云OSS云存储以支持大文件');
         }
       } catch (error) {
         console.error('Load error:', error);
         showError('加载失败', error.message, error.stack);
+      }
+    }
+    
+    // 从云端URL加载
+    async function loadFromCloud(url, entryFile) {
+      showLoading('正在从云端下载课件...');
+      
+      try {
+        // 下载ZIP文件
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error('云端文件下载失败');
+        }
+        
+        const arrayBuffer = await response.arrayBuffer();
+        updateProgress('下载完成，正在解压...');
+        
+        // 转Base64
+        const base64 = arrayBufferToBase64(arrayBuffer);
+        await extractAndPreview(base64, entryFile || 'index.html');
+      } catch (error) {
+        console.error('Cloud load error:', error);
+        showError('云端加载失败', error.message, 
+          '可能原因：\n1. 文件不存在或已删除\n2. 网络连接问题\n3. CORS跨域限制');
       }
     }
     
@@ -255,13 +312,11 @@
         updateProgress('查找入口文件...');
         let entryPath = entryFile;
         
-        // 如果入口文件不存在，尝试查找index.html
         if (!zip.file(entryPath)) {
           const indexFile = zip.file('index.html');
           if (indexFile) {
             entryPath = 'index.html';
           } else {
-            // 尝试在子目录中查找
             const files = Object.keys(zip.files);
             const htmlFiles = files.filter(f => f.endsWith('.html') && !f.includes('/'));
             if (htmlFiles.length > 0) {
@@ -286,33 +341,20 @@
           if (!file.dir) {
             promises.push(
               file.async('base64').then(content => {
-                // 推断MIME类型
                 const ext = relativePath.split('.').pop().toLowerCase();
                 const mimeTypes = {
-                  'html': 'text/html',
-                  'htm': 'text/html',
-                  'css': 'text/css',
-                  'js': 'application/javascript',
+                  'html': 'text/html', 'htm': 'text/html',
+                  'css': 'text/css', 'js': 'application/javascript',
                   'json': 'application/json',
-                  'png': 'image/png',
-                  'jpg': 'image/jpeg',
-                  'jpeg': 'image/jpeg',
-                  'gif': 'image/gif',
-                  'svg': 'image/svg+xml',
-                  'mp4': 'video/mp4',
-                  'webm': 'video/webm',
-                  'mp3': 'audio/mp3',
-                  'wav': 'audio/wav',
+                  'png': 'image/png', 'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'gif': 'image/gif', 'svg': 'image/svg+xml',
+                  'mp4': 'video/mp4', 'webm': 'video/webm',
+                  'mp3': 'audio/mp3', 'wav': 'audio/wav',
                   'pdf': 'application/pdf',
-                  'woff': 'font/woff',
-                  'woff2': 'font/woff2',
-                  'ttf': 'font/ttf',
-                  'eot': 'application/vnd.ms-fontobject'
+                  'woff': 'font/woff', 'woff2': 'font/woff2', 'ttf': 'font/ttf', 'eot': 'application/vnd.ms-fontobject'
                 };
-                const mimeType = mimeTypes[ext] || 'application/octet-stream';
                 fileMap[relativePath] = {
                   content: content,
-                  mimeType: mimeType
+                  mimeType: mimeTypes[ext] || 'application/octet-stream'
                 };
               })
             );
@@ -329,25 +371,23 @@
         // 替换内部链接
         let htmlContent = atob(entryContent);
         
-        // 替换CSS/JS等资源的引用
         Object.keys(fileMap).forEach(path => {
           if (path !== entryPath) {
             const blob = base64ToBlob(fileMap[path].content, fileMap[path].mimeType);
             const blobUrl = URL.createObjectURL(blob);
-            htmlContent = htmlContent.replace(new RegExp(path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), blobUrl);
+            // 替换相对路径引用
+            htmlContent = htmlContent.replace(new RegExp('["\'](\\.[^"\']*' + path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '|[^"\']*' + path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'g'), 
+              '"' + blobUrl + '"');
           }
         });
         
-        // 创建最终的HTML Blob
+        // 创建HTML Blob
         const finalBlob = new Blob([htmlContent], { type: entryMimeType });
         const blobUrl = URL.createObjectURL(finalBlob);
         
-        // 更新页面信息
         const fileCount = Object.keys(fileMap).length;
-        document.getElementById('coursewareInfo').textContent = 
-          `📁 ${fileCount} 个文件 | 📝 ${entryPath}`;
+        document.getElementById('coursewareInfo').textContent += ' | 📦 ' + fileCount + ' 个文件';
         
-        // 加载iframe
         hideLoading();
         document.getElementById('previewIframe').src = blobUrl;
         
@@ -358,7 +398,6 @@
       }
     }
     
-    // Base64转Blob
     function base64ToBlob(base64, mimeType) {
       const byteCharacters = atob(base64);
       const byteNumbers = new Array(byteCharacters.length);
@@ -369,7 +408,17 @@
       return new Blob([byteArray], { type: mimeType });
     }
     
-    // 全屏切换
+    function arrayBufferToBase64(buffer) {
+      const bytes = new Uint8Array(buffer);
+      let binary = '';
+      const chunkSize = 8192;
+      for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+        const chunk = bytes.subarray(offset, Math.min(offset + chunkSize, bytes.length));
+        binary += String.fromCharCode.apply(null, chunk);
+      }
+      return btoa(binary);
+    }
+    
     function toggleFullscreen() {
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen();
@@ -378,7 +427,6 @@
       }
     }
     
-    // 关闭窗口
     function closeWindow() {
       if (window.opener) {
         window.close();
@@ -387,7 +435,6 @@
       }
     }
     
-    // 页面加载完成后开始加载课件
     window.addEventListener('load', loadCourseware);
   </script>
 </body>
